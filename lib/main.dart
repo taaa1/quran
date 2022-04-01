@@ -127,7 +127,7 @@ class _ReadPageS extends State<ReadPage> {
           builder: (ctx, snapshot) {
             if(snapshot.hasData) {
               List<Widget> s = XmlDocument.parse(snapshot.data.toString()).getElement("quran")!.childElements.elementAt(widget.ind).childElements
-              .map((p0) => Column(children: [ListTile(title: Text(p0.getAttribute("text")!, textAlign: TextAlign.right, textScaleFactor: 2, style: arabic)), const Divider()]))
+              .map((p0) => Column(children: [Container(padding: const EdgeInsets.all(8),child: ListTile(title: Text(p0.getAttribute("text")!, textScaleFactor: 2, style: arabic, textDirection: TextDirection.rtl,))), const Divider()]))
               .toList();
               return ListView(children: s, shrinkWrap: true);
             }
