@@ -2,16 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:xml/xml.dart';
 
-import 'package:flutter/services.dart' show rootBundle;
-
-XmlDocument? document;
-
 void main() {
   runApp(const MyApp());
-  rootBundle.loadString('assets/quran.xml').then((value) {
-    document = XmlDocument.parse(value);
-  });
 }
+
+const TextStyle arabic = TextStyle(fontFamily: 'Uthmani');
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -51,44 +46,96 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: const Text("Qur'an"),
         ),
-        body: SingleChildScrollView(child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Center(
-                child: Column(
-              children: <Widget>[
-                Text(
-                  'Mau baca apa hari ini?',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                FutureBuilder<String>(
-                  future: _lss,
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      List<Widget> a = XmlDocument.parse(snapshot.data!)
-                          .getElement("quran")!
-                          .childElements
-                          .map((p0) => Card(
-                              child: InkWell(
-                                  splashColor: Colors.green,
-                                  onTap: () {
-                                    debugPrint("a");
-                                  },
-                                  child: ListTile(
-                                      title: Text(p0.getAttribute("name")!)))))
-                          .toList();
-                      return ResponsiveGridList(
-                          horizontalGridMargin: 50,
-                          verticalGridMargin: 50,
-                          minItemWidth: 300,
-                          minItemsPerRow: 1,
-                          maxItemsPerRow: 3,
-                          shrinkWrap: true,
-                          children: a);
-                    }
-                    return const CircularProgressIndicator();
-                  },
-                ),
-              ],
-            )))));
+        body: SingleChildScrollView(
+            child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                    child: Column(
+                  children: <Widget>[
+                    Text(
+                      'Mau baca apa hari ini?',
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    FutureBuilder<String>(
+                      future: _lss,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          Iterable k = XmlDocument.parse(snapshot.data!)
+                              .getElement("quran")!
+                              .childElements;
+                          List<Widget> a = k.toList().asMap().entries.map((p0) => Card(
+                                  child: InkWell(
+                                      splashColor: Colors.green,
+                                      onTap: () {
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => ReadPage(
+                                                      surat: p0.value.getAttribute(
+                                                          "name")!,
+                                                      ind: p0.key
+                                                    )));
+                                      },
+                                      child: ListTile(
+                                          title:
+                                              Text(p0.value.getAttribute("name")!, style: arabic, textScaleFactor: 1.5, textAlign: TextAlign.right)))))
+                              .toList();
+                          return ResponsiveGridList(
+                              horizontalGridMargin: 50,
+                              verticalGridMargin: 50,
+                              minItemWidth: 300,
+                              minItemsPerRow: 1,
+                              maxItemsPerRow: 3,
+                              shrinkWrap: true,
+                              children: a);
+                        }
+                        return const CircularProgressIndicator();
+                      },
+                    ),
+                  ],
+                )))));
+  }
+}
+
+class ReadPage extends StatefulWidget {
+  const ReadPage({Key? key, required this.surat, required this.ind}) : super(key: key);
+
+  final String surat;
+  final int ind;
+
+  @override
+  State<ReadPage> createState() => _ReadPageS();
+}
+
+class _ReadPageS extends State<ReadPage> {
+  late Future<String> _data;
+
+  @override void initState() {
+    super.initState();
+    _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+  }
+
+  @override
+  Widget build(BuildContext build) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.surat, style: arabic),
+      ),
+      body: SingleChildScrollView(
+        child: FutureBuilder(
+          future: _data,
+          builder: (ctx, snapshot) {
+            if(snapshot.hasData) {
+              List<Widget> s = XmlDocument.parse(snapshot.data.toString()).getElement("quran")!.childElements.elementAt(widget.ind).childElements
+              .map((p0) => Column(children: [ListTile(title: Text(p0.getAttribute("text")!, textAlign: TextAlign.right, textScaleFactor: 2, style: arabic)), const Divider()]))
+              .toList();
+              return ListView(children: s, shrinkWrap: true);
+            }
+
+            return const Center(child: CircularProgressIndicator());
+          },
+        )
+      )
+    );
   }
 }
