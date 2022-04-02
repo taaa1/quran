@@ -162,6 +162,9 @@ class _ReadPageS extends State<ReadPage> {
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.surat, style: arabic),
+          actions: [
+            IconButton(onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => Footnotes(fn: widget.ind))), icon: const Icon(Icons.info_outline))
+          ],
         ),
         body: SingleChildScrollView(
             child: FutureBuilder(
@@ -515,5 +518,74 @@ class Trl {
         translations: (json['translations'] as List)
             .map((p0) => TranslationList.fromJson(p0))
             .toList());
+  }
+}
+
+class Footnotes extends StatefulWidget {
+  const Footnotes({Key? key, required this.fn}) : super(key: key);
+
+  final int fn;
+
+  @override
+  State<Footnotes> createState() => Fn();
+}
+
+class Fn extends State<Footnotes> {
+  late Future<List<XmlDocument>> _data;
+
+  @override
+  void initState() {
+    super.initState();
+    _data = loadTrans();
+  }
+
+  Future<List<XmlDocument>> loadTrans() async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    if (!Directory('${directory.path}/quran/translations/').existsSync()) {
+      Directory('${directory.path}/quran/translations/')
+          .createSync(recursive: true);
+    }
+
+    return Directory('${directory.path}/quran/translations/')
+        .listSync()
+        .map((e) => XmlDocument.parse(File(e.path).readAsStringSync()))
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Footnote")
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: FutureBuilder(
+          future: _data,
+          builder: (_, snapshot) {
+            if(snapshot.hasData) {
+              List<List<String>> s = (snapshot.data as List<XmlDocument>).map((e) => 
+                e.getElement("translation_root")!.getElement("sura_list")!.findAllElements("sura").elementAt(widget.fn).findAllElements("aya").map((f) => f.getElement("footnotes")!.innerText).toList()
+              ).toList();
+
+              List<XmlDocument> g = snapshot.data as List<XmlDocument>;
+
+              s = s.map((e) {
+                e.removeWhere((element) => element.trim().isEmpty);
+                return e;
+              }).toList();
+
+              return ListView(
+                children: s.asMap().entries.map((v) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text("${g.elementAt(v.key).getElement('translation_root')!.getElement('meta')!.getElement("language")!.innerText} — ${g.elementAt(v.key).getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText}", style: Theme.of(context).textTheme.headlineSmall), ...v.value.map((e) => Text(e)).toList(), const Divider()])).toList(),
+                shrinkWrap: true,
+              );
+            }
+
+            return const CircularProgressIndicator();
+          },
+        )
+      ),
+    );
   }
 }
