@@ -134,11 +134,27 @@ class ReadPage extends StatefulWidget {
 
 class _ReadPageS extends State<ReadPage> {
   late Future<String> _data;
+  late Future<List<XmlDocument>> _trans;
 
   @override
   void initState() {
     super.initState();
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _trans = loadTrans();
+  }
+
+  Future<List<XmlDocument>> loadTrans() async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    if (!Directory('${directory.path}/quran/translations/').existsSync()) {
+      Directory('${directory.path}/quran/translations/')
+          .createSync(recursive: true);
+    }
+
+    return Directory('${directory.path}/quran/translations/')
+        .listSync()
+        .map((e) => XmlDocument.parse(File(e.path).readAsStringSync()))
+        .toList();
   }
 
   @override
@@ -163,14 +179,64 @@ class _ReadPageS extends State<ReadPage> {
                   .map((p0) => Column(children: [
                         Container(
                             padding: const EdgeInsets.all(8),
-                            child: ListTile(
-                                leading: Text((p0.key + 1).toString()),
-                                title: Text(
-                                  p0.value.getAttribute("text")!,
-                                  textScaleFactor: 2,
-                                  style: arabic,
-                                  textDirection: TextDirection.rtl,
-                                ))),
+                            child: Column(children: [
+                              ListTile(
+                                  leading: Text((p0.key + 1).toString()),
+                                  title: Text(
+                                    p0.value.getAttribute("text")!,
+                                    textScaleFactor: 2,
+                                    style: arabic,
+                                    textDirection: TextDirection.rtl,
+                                  )),
+                              Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder(
+                                    future: _trans,
+                                    builder: (_, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: (snapshot.data
+                                                    as List<XmlDocument>)
+                                                .map((e) => Container(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 16),
+                                                    constraints: const BoxConstraints(maxWidth: 600),
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                              "${e.getElement('translation_root')!.getElement('meta')!.getElement("language")!.innerText} — ${e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText}",
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)),
+                                                          Text(e
+                                                              .getElement(
+                                                                  "translation_root")!
+                                                              .getElement(
+                                                                  "sura_list")!
+                                                              .findAllElements(
+                                                                  "sura")
+                                                              .elementAt(
+                                                                  widget.ind)
+                                                              .findAllElements(
+                                                                  "aya")
+                                                              .elementAt(p0.key)
+                                                              .getElement(
+                                                                  "translation")!
+                                                              .innerText)
+                                                        ])))
+                                                .toList());
+                                      }
+                                      return const CircularProgressIndicator();
+                                    },
+                                  ))
+                            ])),
                         const Divider()
                       ]))
                   .toList();
@@ -272,7 +338,7 @@ class _Tp extends State<TranslationsPage> {
 
   void delete(String key) async {
     final directory = await getApplicationDocumentsDirectory();
-    
+
     File('${directory.path}/quran/translations/$key.xml').deleteSync();
   }
 
@@ -304,17 +370,22 @@ class _Tp extends State<TranslationsPage> {
                 ButtonBar(
                   alignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(onPressed: () => delete(e
-                      .getElement("translation_root")!
-                      .getElement("meta")!
-                      .getElement("id")!
-                      .innerText), child: const Text("Hapus"))
+                    TextButton(
+                        onPressed: () => delete(e
+                            .getElement("translation_root")!
+                            .getElement("meta")!
+                            .getElement("id")!
+                            .innerText),
+                        child: const Text("Hapus"))
                   ],
                 )
               ])))
           .toList();
       installed = (s.isEmpty)
-          ? Text("Belum ada terjemahan yang terpasang.\nPilih terjemahan di bawah untuk memasang.", textAlign: TextAlign.center, style: Theme.of(context).textTheme.subtitle1)
+          ? Text(
+              "Belum ada terjemahan yang terpasang.\nPilih terjemahan di bawah untuk memasang.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.subtitle1)
           : ResponsiveGridList(
               horizontalGridMargin: 50,
               verticalGridMargin: 10,
