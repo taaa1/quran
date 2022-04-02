@@ -36,6 +36,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   responsive_grid_list: ^1.2.4
   xml: ^5.3.1
+  http: ^0.13.4
+  path_provider: ^2.0.9
 
 dev_dependencies:
   flutter_test:
