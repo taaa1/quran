@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
-
 import 'package:path_provider/path_provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 void main() {
   runApp(const MyApp());
@@ -63,8 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
               tooltip: "Pengaturan",
             ),
             IconButton(
-                onPressed: () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => const Info())),
+                onPressed: () => Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Info())),
                 icon: const Icon(Icons.info_outline),
                 tooltip: "Tentang")
           ],
@@ -140,6 +141,7 @@ class ReadPage extends StatefulWidget {
 class _ReadPageS extends State<ReadPage> {
   late Future<String> _data;
   late Future<List<XmlDocument>> _trans;
+  List<int> ss = [];
 
   @override
   void initState() {
@@ -165,9 +167,7 @@ class _ReadPageS extends State<ReadPage> {
   @override
   Widget build(BuildContext build) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.surat, style: arabic)
-        ),
+        appBar: AppBar(title: Text(widget.surat, style: arabic)),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
@@ -181,96 +181,122 @@ class _ReadPageS extends State<ReadPage> {
                   .toList()
                   .asMap()
                   .entries
-                  .map((p0) => Column(children: [
-                        Container(
-                            padding: const EdgeInsets.all(8),
-                            child: Column(children: [
-                              ListTile(
-                                  leading: Text((p0.key + 1).toString()),
-                                  title: Text(
-                                    p0.value.getAttribute("text")!,
-                                    textScaleFactor: 2,
-                                    style: arabic,
-                                    textDirection: TextDirection.rtl,
-                                  )),
-                              Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: FutureBuilder(
-                                    future: _trans,
-                                    builder: (_, snapshot) {
-                                      if (snapshot.hasData) {
-                                        return Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: (snapshot.data
-                                                    as List<XmlDocument>)
-                                                .map((e) => Container(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 16),
-                                                    constraints:
-                                                        const BoxConstraints(
-                                                            maxWidth: 600),
-                                                    child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(
-                                                              "${e.getElement('translation_root')!.getElement('meta')!.getElement("language")!.innerText} — ${e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText}",
-                                                              style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                          Text(e
-                                                              .getElement(
-                                                                  "translation_root")!
-                                                              .getElement(
-                                                                  "sura_list")!
-                                                              .findAllElements(
-                                                                  "sura")
-                                                              .elementAt(
-                                                                  widget.ind)
-                                                              .findAllElements(
-                                                                  "aya")
-                                                              .elementAt(p0.key)
-                                                              .getElement(
-                                                                  "translation")!
-                                                              .innerText),
-                                                          (e
-                                                              .getElement(
-                                                                  "translation_root")!
-                                                              .getElement(
-                                                                  "sura_list")!
-                                                              .findAllElements(
-                                                                  "sura")
-                                                              .elementAt(
-                                                                  widget.ind)
-                                                              .findAllElements(
-                                                                  "aya")
-                                                              .elementAt(p0.key).getElement("footnotes")!.innerText.isNotEmpty) ? Footnotes(fn: e
-                                                              .getElement(
-                                                                  "translation_root")!
-                                                              .getElement(
-                                                                  "sura_list")!
-                                                              .findAllElements(
-                                                                  "sura")
-                                                              .elementAt(
-                                                                  widget.ind)
-                                                              .findAllElements(
-                                                                  "aya")
-                                                              .elementAt(p0.key).getElement("footnotes")!.innerText) : Container(),
-                                                              const Divider()
-                                                        ])))
-                                                .toList());
-                                      }
-                                      return const CircularProgressIndicator();
-                                    },
-                                  ))
-                            ])),
-                        const Divider()
-                      ]))
-                  .toList();
+                  .map((p0) {
+                return Column(children: [
+                  VisibilityDetector(
+                      key: Key(p0.key.toString()),
+                      onVisibilityChanged: (VisibilityInfo v) {
+                        var vi = v.visibleFraction * 100;
+                        int key = int.parse((v.key as ValueKey<String>).value);
+                        if (vi > 40) {
+                          if (!ss.contains(key)) ss.add(key);
+                        } else {
+                          ss.remove(key);
+                        }
+                        debugPrint(ss.reduce(min).toString());
+                      },
+                      child: Container(
+                          padding: const EdgeInsets.all(8),
+                          child: Column(children: [
+                            ListTile(
+                                leading: Text((p0.key + 1).toString()),
+                                title: Text(
+                                  p0.value.getAttribute("text")!,
+                                  textScaleFactor: 2,
+                                  style: arabic,
+                                  textDirection: TextDirection.rtl,
+                                )),
+                            Align(
+                                alignment: Alignment.centerLeft,
+                                child: FutureBuilder(
+                                  future: _trans,
+                                  builder: (_, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: (snapshot.data
+                                                  as List<XmlDocument>)
+                                              .map((e) => Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 16),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 600),
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(
+                                                            "${e.getElement('translation_root')!.getElement('meta')!.getElement("language")!.innerText} — ${e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText}",
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                        Text(e
+                                                            .getElement(
+                                                                "translation_root")!
+                                                            .getElement(
+                                                                "sura_list")!
+                                                            .findAllElements(
+                                                                "sura")
+                                                            .elementAt(
+                                                                widget.ind)
+                                                            .findAllElements(
+                                                                "aya")
+                                                            .elementAt(p0.key)
+                                                            .getElement(
+                                                                "translation")!
+                                                            .innerText),
+                                                        (e
+                                                                .getElement(
+                                                                    "translation_root")!
+                                                                .getElement(
+                                                                    "sura_list")!
+                                                                .findAllElements(
+                                                                    "sura")
+                                                                .elementAt(
+                                                                    widget.ind)
+                                                                .findAllElements(
+                                                                    "aya")
+                                                                .elementAt(
+                                                                    p0.key)
+                                                                .getElement(
+                                                                    "footnotes")!
+                                                                .innerText
+                                                                .isNotEmpty)
+                                                            ? Footnotes(
+                                                                fn: e
+                                                                    .getElement(
+                                                                        "translation_root")!
+                                                                    .getElement(
+                                                                        "sura_list")!
+                                                                    .findAllElements(
+                                                                        "sura")
+                                                                    .elementAt(
+                                                                        widget
+                                                                            .ind)
+                                                                    .findAllElements(
+                                                                        "aya")
+                                                                    .elementAt(
+                                                                        p0.key)
+                                                                    .getElement(
+                                                                        "footnotes")!
+                                                                    .innerText)
+                                                            : Container(),
+                                                        const Divider()
+                                                      ])))
+                                              .toList());
+                                    }
+                                    return const CircularProgressIndicator();
+                                  },
+                                ))
+                          ]))),
+                  const Divider()
+                ]);
+              }).toList();
               return ListView(children: s, shrinkWrap: true);
             }
 
@@ -563,10 +589,11 @@ class Fn extends State<Footnotes> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-      IconButton(onPressed: () => setState(() => open = !open), icon: const Icon(Icons.info_outline), tooltip: "Footnote"),
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      IconButton(
+          onPressed: () => setState(() => open = !open),
+          icon: const Icon(Icons.info_outline),
+          tooltip: "Footnote"),
       open ? Text(widget.fn) : Container()
     ]);
   }
@@ -581,7 +608,8 @@ class Info extends StatelessWidget {
         appBar: AppBar(title: const Text("Tentang")),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
-            child: Center(child: Column(children: [
+            child: Center(
+                child: Column(children: [
               Text("Qur'an", style: Theme.of(context).textTheme.headlineMedium),
               const Text("Data Qur'an dari tanzil.net"),
               const Text("Data terjemahan dari quranenc.com")
