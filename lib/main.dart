@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -40,11 +41,13 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   late Future<String> _lss;
+  late Future<SharedPreferences> _last;
 
   @override
   void initState() {
     super.initState();
     _lss = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _last = SharedPreferences.getInstance();
   }
 
   @override
@@ -80,6 +83,45 @@ class _MyHomePageState extends State<MyHomePage> {
                       'Mau baca apa hari ini?',
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
+                    FutureBuilder<SharedPreferences>(
+                        future: _last,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasData) {
+                            List<String>? data =
+                                snapshot.data!.getStringList("last");
+                            if (data != null) {
+                              if (data.isNotEmpty) {
+                                debugPrint(data.toString());
+                                return Column(children: [
+                                  Text("Terakhir dibaca",
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineSmall),
+                                  ResponsiveGridList(
+                                      children: data.map((e) {
+                                        var s = e.split(":");
+                                        s = s
+                                            .map((value) =>
+                                                (int.parse(value) + 1)
+                                                    .toString())
+                                            .toList();
+                                        return Card(
+                                            child: ListTile(
+                                                title: Text(s.join(":"))));
+                                      }).toList(),
+                                      minItemWidth: 300,
+                                      maxItemsPerRow: 3,
+                                      shrinkWrap: true,
+                                      horizontalGridMargin: 50,
+                                      verticalGridMargin: 20),
+                                  const Divider()
+                                ]);
+                              }
+                            }
+                          }
+
+                          return Container();
+                        }),
                     FutureBuilder<String>(
                       future: _lss,
                       builder: (context, snapshot) {
@@ -112,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               .toList();
                           return ResponsiveGridList(
                               horizontalGridMargin: 50,
-                              verticalGridMargin: 50,
+                              verticalGridMargin: 20,
                               minItemWidth: 300,
                               minItemsPerRow: 1,
                               maxItemsPerRow: 3,
@@ -164,6 +206,25 @@ class _ReadPageS extends State<ReadPage> {
         .toList();
   }
 
+  void update(int a) async {
+    final pref = await SharedPreferences.getInstance();
+    var s = pref.getStringList('last');
+    if (s != null) {
+      if (s.any((element) => int.parse(element.split(":")[0]) == widget.ind)) {
+        s.removeWhere(
+            (element) => int.parse(element.split(":")[0]) == widget.ind);
+        s.insert(0, "${widget.ind}:$a");
+      } else {
+        if (s.isNotEmpty && s.length == 3) s.removeLast();
+        s.insert(0, "${widget.ind}:$a");
+      }
+    } else {
+      s = ["${widget.ind}:$a"];
+    }
+    pref.setStringList('last', s);
+    debugPrint(s.toString());
+  }
+
   @override
   Widget build(BuildContext build) {
     return Scaffold(
@@ -193,7 +254,7 @@ class _ReadPageS extends State<ReadPage> {
                         } else {
                           ss.remove(key);
                         }
-                        debugPrint(ss.reduce(min).toString());
+                        if (ss.isNotEmpty) update(ss.reduce(min));
                       },
                       child: Container(
                           padding: const EdgeInsets.all(8),
