@@ -93,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               if (data.isNotEmpty) {
                                 debugPrint(data.toString());
                                 return Column(children: [
+                                  const Divider(),
                                   Text("Terakhir dibaca",
                                       style: Theme.of(context)
                                           .textTheme
@@ -107,14 +108,25 @@ class _MyHomePageState extends State<MyHomePage> {
                                             .toList();
                                         return Card(
                                             child: ListTile(
-                                                title: Text(s.join(":"))));
+                                                title: Text(s.join(":")),
+                                                onTap: () => Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            ReadPage(
+                                                                surat: s[0],
+                                                                ind: int.parse(
+                                                                        s[0]) -
+                                                                    1,
+                                                                scrollTo:
+                                                                    int.parse(s[
+                                                                        1]))))));
                                       }).toList(),
                                       minItemWidth: 300,
                                       maxItemsPerRow: 3,
                                       shrinkWrap: true,
                                       horizontalGridMargin: 50,
-                                      verticalGridMargin: 20),
-                                  const Divider()
+                                      verticalGridMargin: 20)
                                 ]);
                               }
                             }
@@ -122,6 +134,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
                           return Container();
                         }),
+                    const Divider(),
+                    Text("Baca...",
+                        style: Theme.of(context).textTheme.headlineSmall),
                     FutureBuilder<String>(
                       future: _lss,
                       builder: (context, snapshot) {
@@ -170,11 +185,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class ReadPage extends StatefulWidget {
-  const ReadPage({Key? key, required this.surat, required this.ind})
+  const ReadPage(
+      {Key? key, required this.surat, required this.ind, this.scrollTo})
       : super(key: key);
 
   final String surat;
   final int ind;
+  final int? scrollTo;
 
   @override
   State<ReadPage> createState() => _ReadPageS();
@@ -184,6 +201,7 @@ class _ReadPageS extends State<ReadPage> {
   late Future<String> _data;
   late Future<List<XmlDocument>> _trans;
   List<int> ss = [];
+  List list = [];
 
   @override
   void initState() {
@@ -243,7 +261,9 @@ class _ReadPageS extends State<ReadPage> {
                   .asMap()
                   .entries
                   .map((p0) {
-                return Column(children: [
+                var li = GlobalKey();
+                list.add(li);
+                return Column(key: li, children: [
                   VisibilityDetector(
                       key: Key(p0.key.toString()),
                       onVisibilityChanged: (VisibilityInfo v) {
@@ -273,6 +293,9 @@ class _ReadPageS extends State<ReadPage> {
                                   future: _trans,
                                   builder: (_, snapshot) {
                                     if (snapshot.hasData) {
+                                      WidgetsBinding.instance!
+                                          .addPostFrameCallback(
+                                              (_) => scroll());
                                       return Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
@@ -358,12 +381,19 @@ class _ReadPageS extends State<ReadPage> {
                   const Divider()
                 ]);
               }).toList();
+
               return ListView(children: s, shrinkWrap: true);
             }
 
             return const Center(child: CircularProgressIndicator());
           },
         )));
+  }
+
+  Future<void> scroll() async {
+    if (widget.scrollTo != null) {
+      Scrollable.ensureVisible(list[widget.scrollTo! - 1].currentContext!);
+    }
   }
 }
 
