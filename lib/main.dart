@@ -234,6 +234,14 @@ class _ReadPageS extends State<ReadPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    for (var element in list.toList().asMap().entries) {
+      VisibilityDetectorController.instance.forget(Key(element.key.toString()));
+    }
+  }
+
+  @override
   Widget build(BuildContext build) {
     return Scaffold(
         appBar: AppBar(title: Text(widget.surat, style: arabic)),
