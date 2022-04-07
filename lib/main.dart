@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -434,6 +435,7 @@ class TranslationsPage extends StatefulWidget {
 class _Tp extends State<TranslationsPage> {
   late Future<Trl> _json;
   List<XmlDocument>? _installed;
+  StreamSubscription? watch;
 
   Future<Trl> fetchTranslationList() async {
     final res = await http
@@ -463,10 +465,17 @@ class _Tp extends State<TranslationsPage> {
     _json = fetchTranslationList();
     getInstalled().then((value) => setState(() => _installed = value));
     getApplicationDocumentsDirectory().then((v) {
-      Directory('${v.path}/quran/translations/').watch().listen((event) {
+      watch =
+          Directory('${v.path}/quran/translations/').watch().listen((event) {
         getInstalled().then((value) => setState(() => _installed = value));
       });
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    watch?.cancel();
   }
 
   void delete(String key) async {
@@ -515,8 +524,7 @@ class _Tp extends State<TranslationsPage> {
               ])))
           .toList();
       installed = (s.isEmpty)
-          ? Text(
-              AppLocalizations.of(context)!.noInstalledTranslations,
+          ? Text(AppLocalizations.of(context)!.noInstalledTranslations,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.subtitle1)
           : ResponsiveGridList(
