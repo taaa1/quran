@@ -406,9 +406,9 @@ class SettingsPage extends StatelessWidget {
           child: ListView(
         shrinkWrap: true,
         children: [
-          SettingsItem(
-            name: "Terjemahan",
-            icon: const Icon(Icons.translate),
+          ListTile(
+            title: const Text("Terjemahan"),
+            leading: const Icon(Icons.translate),
             onTap: () {
               Navigator.push(
                   context,
@@ -419,21 +419,6 @@ class SettingsPage extends StatelessWidget {
         ],
       )),
     );
-  }
-}
-
-class SettingsItem extends StatelessWidget {
-  const SettingsItem(
-      {Key? key, required this.name, required this.icon, required this.onTap})
-      : super(key: key);
-
-  final String name;
-  final Icon icon;
-  final void Function() onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(title: Text(name), leading: icon, onTap: onTap);
   }
 }
 
