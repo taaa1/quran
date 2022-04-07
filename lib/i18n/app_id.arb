@@ -1,0 +1,15 @@
+{
+  "head": "Mau baca apa hari ini?",
+  "head2": "Baca...",
+  "head3": "Terakhir Dibaca",
+  "settings": "Pengaturan",
+  "about": "Tentang",
+  "translation": "Terjemahan",
+  "delete": "Hapus",
+  "noInstalledTranslations": "Belum ada terjemahan yang terpasang.\nPilih terjemahan di bawah untuk memasang.",
+  "installed": "Terpasang",
+  "available": "Tersedia",
+  "footnote": "Catatan Kaki",
+  "about1": "Data Qur'an dari tanzil.net",
+  "about2": "Data terjemahan dari quranenc.com"
+}

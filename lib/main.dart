@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +20,6 @@ const TextStyle arabic = TextStyle(fontFamily: 'Uthmani');
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,6 +28,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.green,
       ),
       home: const MyHomePage(),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 }
@@ -68,13 +70,13 @@ class _MyHomePageState extends State<MyHomePage> {
                     MaterialPageRoute(
                         builder: (context) => const SettingsPage()));
               },
-              tooltip: "Pengaturan",
+              tooltip: AppLocalizations.of(context)!.settings,
             ),
             IconButton(
                 onPressed: () => Navigator.push(context,
                     MaterialPageRoute(builder: (context) => const Info())),
                 icon: const Icon(Icons.info_outline),
-                tooltip: "Tentang")
+                tooltip: AppLocalizations.of(context)!.about)
           ],
         ),
         body: SingleChildScrollView(
@@ -84,12 +86,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: Column(
                   children: <Widget>[
                     Text(
-                      'Mau baca apa hari ini?',
+                      AppLocalizations.of(context)!.head,
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     s(),
                     const Divider(),
-                    Text("Baca...",
+                    Text(AppLocalizations.of(context)!.head2,
                         style: Theme.of(context).textTheme.headlineSmall),
                     FutureBuilder<String>(
                       future: _lss,
@@ -145,7 +147,7 @@ class _MyHomePageState extends State<MyHomePage> {
           debugPrint(data.toString());
           return Column(children: [
             const Divider(),
-            Text("Terakhir dibaca",
+            Text(AppLocalizations.of(context)!.head3,
                 style: Theme.of(context).textTheme.headlineSmall),
             ResponsiveGridList(
                 children: data.map((e) {
@@ -390,7 +392,7 @@ class _ReadPageS extends State<ReadPage> {
 
   Future<void> scroll() async {
     if (widget.scrollTo != null) {
-      Scrollable.ensureVisible(list[widget.scrollTo! - 1].currentContext!);
+      Scrollable.ensureVisible(list[widget.scrollTo! - 1].currentContext);
     }
   }
 }
@@ -401,13 +403,13 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Pengaturan")),
+      appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       body: SingleChildScrollView(
           child: ListView(
         shrinkWrap: true,
         children: [
           ListTile(
-            title: const Text("Terjemahan"),
+            title: Text(AppLocalizations.of(context)!.translation),
             leading: const Icon(Icons.translate),
             onTap: () {
               Navigator.push(
@@ -507,14 +509,14 @@ class _Tp extends State<TranslationsPage> {
                             .getElement("meta")!
                             .getElement("id")!
                             .innerText),
-                        child: const Text("Hapus"))
+                        child: Text(AppLocalizations.of(context)!.delete))
                   ],
                 )
               ])))
           .toList();
       installed = (s.isEmpty)
           ? Text(
-              "Belum ada terjemahan yang terpasang.\nPilih terjemahan di bawah untuk memasang.",
+              AppLocalizations.of(context)!.noInstalledTranslations,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.subtitle1)
           : ResponsiveGridList(
@@ -531,7 +533,7 @@ class _Tp extends State<TranslationsPage> {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Terjemahan"),
+          title: Text(AppLocalizations.of(context)!.translation),
         ),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(10),
@@ -540,14 +542,14 @@ class _Tp extends State<TranslationsPage> {
                 children: [
                   Column(
                     children: [
-                      Text("Terpasang",
+                      Text(AppLocalizations.of(context)!.installed,
                           style: Theme.of(context).textTheme.headlineMedium),
                       installed
                     ],
                   ),
                   const Divider(),
                   Column(children: [
-                    Text("Tersedia",
+                    Text(AppLocalizations.of(context)!.available,
                         style: Theme.of(context).textTheme.headlineMedium),
                     FutureBuilder(
                         future: _json,
@@ -667,7 +669,7 @@ class Fn extends State<Footnotes> {
       IconButton(
           onPressed: () => setState(() => open = !open),
           icon: const Icon(Icons.info_outline),
-          tooltip: "Footnote"),
+          tooltip: AppLocalizations.of(context)!.footnote),
       open ? Text(widget.fn) : Container()
     ]);
   }
@@ -685,8 +687,8 @@ class Info extends StatelessWidget {
             child: Center(
                 child: Column(children: [
               Text("Qur'an", style: Theme.of(context).textTheme.headlineMedium),
-              const Text("Data Qur'an dari tanzil.net"),
-              const Text("Data terjemahan dari quranenc.com")
+              Text(AppLocalizations.of(context)!.about1),
+              Text(AppLocalizations.of(context)!.about2)
             ]))));
   }
 }
