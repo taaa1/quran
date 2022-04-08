@@ -1,4 +1,4 @@
-app-id: io.ta.quran
+app-id: com.github.taaa1.quran
 runtime: org.freedesktop.Platform
 runtime-version: '21.08'
 sdk: org.freedesktop.Sdk

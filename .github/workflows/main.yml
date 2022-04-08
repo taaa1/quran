@@ -29,7 +29,7 @@ jobs:
     name: "Flatpak"
     runs-on: ubuntu-latest
     container:
-      image: bilelmoussaoui/flatpak-github-actions:gnome-40
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-21.08
       options: --privileged
     steps:
       - uses: actions/checkout@v2
@@ -39,6 +39,6 @@ jobs:
           path: build/linux/x64/release/bundle
       - uses: bilelmoussaoui/flatpak-github-actions/flatpak-builder@v4
         with:
-          bundle: quran.flatpak
-          manifest-path: flatpak/io.ta.quran.yml
+          bundle: com.github.taaa1.quran.flatpak
+          manifest-path: flatpak/com.github.taaa1.quran.yml
           cache-key: flatpak-builder-${{ github.sha }}
