@@ -54,5 +54,5 @@ jobs:
       - name: "Push built app"
         uses: "actions/upload-artifact@v1"
         with:
-          name: windows-build.exe
+          name: windows
           path: build\windows\runner\Release
