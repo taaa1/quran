@@ -199,12 +199,14 @@ class _ReadPageS extends State<ReadPage> {
   late Future<List<XmlDocument>> _trans;
   List<int> ss = [];
   List list = [];
+  String? title;
 
   @override
   void initState() {
     super.initState();
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
     _trans = loadTrans();
+    _data.then((v) => setState(()=>title=XmlDocument.parse(v).getElement("quran")!.childElements.elementAt(widget.ind).getAttribute("name")));
   }
 
   Future<List<XmlDocument>> loadTrans() async {
@@ -247,7 +249,7 @@ class _ReadPageS extends State<ReadPage> {
   @override
   Widget build(BuildContext build) {
     return Scaffold(
-        appBar: AppBar(title: Text(widget.surat, style: arabic)),
+        appBar: AppBar(title: Text(title??widget.surat, style: arabic)),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
