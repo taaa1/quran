@@ -1,0 +1,28 @@
+app-id: io.ta.quran
+runtime: org.freedesktop.Platform
+runtime-version: '21.08'
+sdk: org.freedesktop.Sdk
+command: run.sh
+separate-locales: false
+finish-args:
+  - --share=ipc
+  - --socket=fallback-x11
+  - --socket=wayland
+  - --device=dri
+  - --talk-name=org.freedesktop.Notifications
+modules:
+  - name: quran
+    buildsystem: simple
+    build-commands:
+      - mkdir /app/quran
+      - cp -R lib data /app/quran
+      - cp quran /app/quran/
+      - chmod +x /app/quran/quran
+      - install -Dm755 -t /app/bin/ run.sh
+    sources:
+      - type: dir
+        path: ../build/linux/x64/release/bundle
+      - type: script
+        dest-filename: run.sh
+        commands:
+          - /app/quran/quran
