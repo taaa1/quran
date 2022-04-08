@@ -42,3 +42,17 @@ jobs:
           bundle: com.github.taaa1.quran.flatpak
           manifest-path: flatpak/com.github.taaa1.quran.yml
           cache-key: flatpak-builder-${{ github.sha }}
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+      - run: flutter build windows
+      - name: "Push built app"
+        uses: "actions/upload-artifact@v1"
+        with:
+          name: windows-build.exe
+          path: build\windows\x64\Release\Runner\*.exe
