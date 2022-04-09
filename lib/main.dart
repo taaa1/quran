@@ -200,6 +200,7 @@ class _ReadPageS extends State<ReadPage> {
   List<int> ss = [];
   List list = [];
   String? title;
+  Trl? cache;
 
   @override
   void initState() {
@@ -207,6 +208,17 @@ class _ReadPageS extends State<ReadPage> {
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
     _trans = loadTrans();
     _data.then((v) => setState(()=>title=XmlDocument.parse(v).getElement("quran")!.childElements.elementAt(widget.ind).getAttribute("name")));
+    loadTransCache().then((v) => setState(() => cache = v));
+  }
+
+  Future<Trl?> loadTransCache() async {
+    final directory = await getApplicationDocumentsDirectory();
+    try{
+      var s = await File("${directory.path}/quran/translation_cache.json").readAsString();
+      return Trl.fromJson(jsonDecode(s));
+    }catch(e){
+      return null;
+    }
   }
 
   Future<List<XmlDocument>> loadTrans() async {
@@ -317,7 +329,7 @@ class _ReadPageS extends State<ReadPage> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                            "${e.getElement('translation_root')!.getElement('meta')!.getElement("language")!.innerText} — ${e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText}",
+                                                            cache?.translations.firstWhere((v) => v.key == e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText).title??e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText,
                                                             style: const TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
@@ -443,8 +455,16 @@ class _Tp extends State<TranslationsPage> {
     final res = await http
         .get(Uri.parse('https://quranenc.com/api/v1/translations/list'));
 
+    write(res.body);
+
     //check if 200
     return Trl.fromJson(jsonDecode(res.body));
+  }
+
+  void write(String s) async {
+    final directory = await getApplicationDocumentsDirectory();
+    if (!Directory('${directory.path}/quran/').existsSync()) Directory('${directory.path}/quran/').createSync(recursive: true);
+    File("${directory.path}/quran/translation_cache.json").writeAsString(s);
   }
 
   Future<List<XmlDocument>> getInstalled() async {
