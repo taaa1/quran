@@ -6,6 +6,8 @@ command: run.sh
 separate-locales: false
 finish-args:
   - --share=ipc
+  - --share=network
+  - --filesystem=xdg-documents
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
