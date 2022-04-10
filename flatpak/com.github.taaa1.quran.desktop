@@ -1,5 +1,5 @@
 [Desktop Entry]
 Type=Application
 Name=Qur'an
-Icon=icon
+Icon=icon.svg
 Exec=run.sh
