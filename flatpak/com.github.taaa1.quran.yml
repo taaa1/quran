@@ -6,6 +6,8 @@ command: run.sh
 separate-locales: false
 finish-args:
   - --share=ipc
+  - --share=network
+  - --filesystem=xdg-documents
   - --socket=fallback-x11
   - --socket=wayland
   - --device=dri
@@ -16,12 +18,18 @@ modules:
     build-commands:
       - mkdir /app/quran
       - cp -R lib data /app/quran
+      - install -Dm644 icon.svg /app/share/icons/hicolor/scalable/apps/com.github.taaa1.quran.svg
+      - install -Dm644 com.github.taaa1.quran.desktop /app/share/applications/com.github.taaa1.quran.desktop
       - cp quran /app/quran/
       - chmod +x /app/quran/quran
       - install -Dm755 -t /app/bin/ run.sh
     sources:
       - type: dir
         path: ../build/linux/x64/release/bundle
+      - type: file
+        path: ../icon.svg
+      - type: file
+        path: com.github.taaa1.quran.desktop
       - type: script
         dest-filename: run.sh
         commands:

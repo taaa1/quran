@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Qur'an
+Icon=com.github.taaa1.quran
+Exec=run.sh
