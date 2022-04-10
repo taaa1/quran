@@ -16,12 +16,15 @@ modules:
     build-commands:
       - mkdir /app/quran
       - cp -R lib data /app/quran
+      - install -Dm644 icon.svg /app/share/icons/hicolor/scalable/apps/com.github.taaa1.quran.svg
       - cp quran /app/quran/
       - chmod +x /app/quran/quran
       - install -Dm755 -t /app/bin/ run.sh
     sources:
       - type: dir
         path: ../build/linux/x64/release/bundle
+      - type: file
+        path: ../icon.svg
       - type: script
         dest-filename: run.sh
         commands:
