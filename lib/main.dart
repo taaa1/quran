@@ -13,20 +13,43 @@ import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const App());
 }
 
 const TextStyle arabic = TextStyle(fontFamily: 'Uthmani');
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class App extends StatefulWidget {
+  const App({Key? key}) : super(key: key);
+
+  @override
+  State<App> createState() => MyApp();
+}
+
+class MyApp extends State<App> {
+  bool dark = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    StreamingSharedPreferences.instance.then((value) {
+      final s = value.getBool("dark", defaultValue: false);
+      setState(() => dark = s.getValue());
+      s.listen((value) => setState(() => dark = value));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Qur\'an',
+      themeMode: dark ? ThemeMode.dark : ThemeMode.light,
       theme: ThemeData(
+        primarySwatch: Colors.green
+      ),
+      darkTheme: ThemeData(
         primarySwatch: Colors.green,
+        brightness: Brightness.dark
       ),
       home: const MyHomePage(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -69,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SettingsPage()));
+                        builder: (context) => const Stg()));
               },
               tooltip: AppLocalizations.of(context)!.settings,
             ),
@@ -412,8 +435,25 @@ class _ReadPageS extends State<ReadPage> {
   }
 }
 
-class SettingsPage extends StatelessWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class Stg extends StatefulWidget {
+  const Stg({Key? key}) : super(key: key);
+
+  @override
+  State<Stg> createState() => SettingsPage();
+}
+
+class SettingsPage extends State<Stg> {
+  bool dm = false;
+
+  @override
+  void initState() {
+    super.initState();
+    StreamingSharedPreferences.instance.then((value) {
+      final s = value.getBool("dark", defaultValue: false);
+      setState(() => dm = s.getValue());
+      s.listen((value) => setState(() => dm = value));
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -432,10 +472,20 @@ class SettingsPage extends StatelessWidget {
                   MaterialPageRoute(
                       builder: (context) => const TranslationsPage()));
             },
+          ),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.darkMode),
+            leading: const Icon(Icons.dark_mode),
+            trailing: Switch(value: dm, onChanged: update),
+            onTap: ()=>update(!dm)
           )
         ],
       )),
     );
+  }
+
+  void update(bool b) {
+    StreamingSharedPreferences.instance.then((v)=>v.setBool("dark", b));
   }
 }
 
