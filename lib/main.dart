@@ -450,7 +450,6 @@ class Info extends StatelessWidget {
                 child: Column(children: [
               const Image(image: AssetImage("icon.png"), width: 140, height: 140),
               Text("Qur'an", style: Theme.of(context).textTheme.headlineMedium),
-              Text(AppLocalizations.of(context)!.about1),
               Text(AppLocalizations.of(context)!.about2)
             ]))));
   }
