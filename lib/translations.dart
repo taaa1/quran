@@ -63,7 +63,7 @@ class _Tp extends State<TranslationsPage> {
   void delete(String key) async {
     final directory = await getApplicationDocumentsDirectory();
 
-    File('${directory.path}/quran/translations/$key.xml').deleteSync();
+    File('${directory.path}/quran/translations/$key.json').deleteSync();
   }
 
   @override
@@ -239,9 +239,10 @@ class Trl {
 
 class Translation {
   final List<Tr> translations;
-  const Translation({required this.translations});
+  final TranslationList meta;
+  const Translation({required this.translations, required this.meta});
   factory Translation.fromJson(Map<String, dynamic> json) {
-    return Translation(translations: json['translations'].map((v) => Tr.fromJson(v)).toList());
+    return Translation(translations: json['translations'].map<Tr>((v) => Tr.fromJson(v)).toList(), meta: TranslationList.fromMeta(json));
   }
 }
 

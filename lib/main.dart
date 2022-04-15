@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:quran/d/quran.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
-import 'package:xml/xml.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
@@ -195,7 +194,7 @@ class ReadPage extends StatefulWidget {
 
 class _ReadPageS extends State<ReadPage> {
   late Future<String> _data;
-  late Future<List<XmlDocument>> _trans;
+  late Future<List<Translation>> _trans;
   List<int> ss = [];
   List list = [];
   String? title;
@@ -221,7 +220,7 @@ class _ReadPageS extends State<ReadPage> {
     }
   }
 
-  Future<List<XmlDocument>> loadTrans() async {
+  Future<List<Translation>> loadTrans() async {
     final directory = await getApplicationDocumentsDirectory();
 
     if (!Directory('${directory.path}/quran/translations/').existsSync()) {
@@ -231,7 +230,7 @@ class _ReadPageS extends State<ReadPage> {
 
     return Directory('${directory.path}/quran/translations/')
         .listSync()
-        .map((e) => XmlDocument.parse(File(e.path).readAsStringSync()))
+        .map((e) => Translation.fromJson(jsonDecode(File(e.path).readAsStringSync())))
         .toList();
   }
 
@@ -297,7 +296,7 @@ class _ReadPageS extends State<ReadPage> {
                                 )),
                             Align(
                                 alignment: Alignment.centerLeft,
-                                child: FutureBuilder(
+                                child: FutureBuilder<List<Translation>>(
                                   future: _trans,
                                   builder: (_, snapshot) {
                                     if (snapshot.hasData) {
@@ -307,8 +306,7 @@ class _ReadPageS extends State<ReadPage> {
                                       return Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
-                                          children: (snapshot.data
-                                                  as List<XmlDocument>)
+                                          children: snapshot.data!
                                               .map((e) => Container(
                                                   padding:
                                                       const EdgeInsets.only(
@@ -321,82 +319,12 @@ class _ReadPageS extends State<ReadPage> {
                                                           CrossAxisAlignment
                                                               .start,
                                                       children: [
-                                                        Text(
-                                                            cache?.translations
-                                                                    .firstWhere((v) =>
-                                                                        v.key ==
-                                                                        e
-                                                                            .getElement(
-                                                                                'translation_root')!
-                                                                            .getElement(
-                                                                                'meta')!
-                                                                            .getElement(
-                                                                                "id")!
-                                                                            .innerText)
-                                                                    .title ??
-                                                                e
-                                                                    .getElement(
-                                                                        'translation_root')!
-                                                                    .getElement(
-                                                                        'meta')!
-                                                                    .getElement(
-                                                                        "id")!
-                                                                    .innerText,
+                                                        Text(e.meta.title,
                                                             style: const TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        Text(e
-                                                            .getElement(
-                                                                "translation_root")!
-                                                            .getElement(
-                                                                "sura_list")!
-                                                            .findAllElements(
-                                                                "sura")
-                                                            .elementAt(
-                                                                widget.ind)
-                                                            .findAllElements(
-                                                                "aya")
-                                                            .elementAt(key)
-                                                            .getElement(
-                                                                "translation")!
-                                                            .innerText),
-                                                        (e
-                                                                .getElement(
-                                                                    "translation_root")!
-                                                                .getElement(
-                                                                    "sura_list")!
-                                                                .findAllElements(
-                                                                    "sura")
-                                                                .elementAt(
-                                                                    widget.ind)
-                                                                .findAllElements(
-                                                                    "aya")
-                                                                .elementAt(
-                                                                    key)
-                                                                .getElement(
-                                                                    "footnotes")!
-                                                                .innerText
-                                                                .isNotEmpty)
-                                                            ? Footnotes(
-                                                                fn: e
-                                                                    .getElement(
-                                                                        "translation_root")!
-                                                                    .getElement(
-                                                                        "sura_list")!
-                                                                    .findAllElements(
-                                                                        "sura")
-                                                                    .elementAt(
-                                                                        widget
-                                                                            .ind)
-                                                                    .findAllElements(
-                                                                        "aya")
-                                                                    .elementAt(
-                                                                        key)
-                                                                    .getElement(
-                                                                        "footnotes")!
-                                                                    .innerText)
-                                                            : Container(),
+                                                        Text(e.translations[p0.i-1].text.replaceAll(RegExp(r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'), '')), //TODO: show footnotes
                                                         const Divider()
                                                       ])))
                                               .toList());
