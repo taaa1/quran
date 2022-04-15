@@ -446,16 +446,16 @@ class SettingsPage extends State<Stg> {
                       builder: (context) => const TranslationsPage()));
             },
           ),
-          ListTile(
+          SwitchListTile(
               title: Text(AppLocalizations.of(context)!.darkMode),
-              leading: const Icon(Icons.dark_mode),
-              trailing: Switch(value: dm, onChanged: (s) => update(s, "dark")),
-              onTap: () => update(!dm, "dark")),
-          ListTile(
+              secondary: const Icon(Icons.dark_mode),
+              value: dm, 
+              onChanged: (s) => update(s, "dark")),
+          SwitchListTile(
               title: Text(AppLocalizations.of(context)!.arabicName),
-              leading: const Icon(Icons.list),
-              trailing: Switch(onChanged: (b) => update(b, "ar"), value: ar),
-              onTap: () => update(!ar, "ar"))
+              secondary: const Icon(Icons.list),
+              onChanged: (b) => update(b, "ar"),
+              value: ar)
         ],
       )),
     );
