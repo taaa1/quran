@@ -289,7 +289,7 @@ class _ReadPageS extends State<ReadPage> {
                             ListTile(
                                 leading: Text((key + 1).toString()),
                                 title: Text(
-                                  p0.text,
+                                  p0.text+" "+nu((key+1).toString()),
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
