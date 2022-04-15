@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:quran/d/quran.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:xml/xml.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,6 +12,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:quran/translations.dart';
+import 'package:quran/d/chapters.dart';
 
 void main() {
   runApp(const App());
@@ -68,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _lss = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _lss = DefaultAssetBundle.of(context).loadString("assets/chapters.json");
     StreamingSharedPreferences.instance.then((value) {
       final s = value.getStringList("last", defaultValue: []);
       setState(() => _last = s.getValue());
@@ -115,32 +117,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       future: _lss,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          Iterable k = XmlDocument.parse(snapshot.data!)
-                              .getElement("quran")!
-                              .childElements;
-                          List<Widget> a = k
-                              .toList()
-                              .asMap()
-                              .entries
-                              .map((p0) => Card(
-                                  child: InkWell(
-                                      splashColor: Colors.green,
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => ReadPage(
-                                                    surat: p0.value
-                                                        .getAttribute("name")!,
-                                                    ind: p0.key)));
-                                      },
-                                      child: ListTile(
-                                          title: Text(
-                                              p0.value.getAttribute("name")!,
-                                              style: arabic,
-                                              textScaleFactor: 1.5,
-                                              textAlign: TextAlign.right)))))
-                              .toList();
+                          Chapters js = Chapters.fromJson(jsonDecode(snapshot.data!));
+                          Iterable<Chapter> k = js.chapters;
+                          List<Widget> a = k.map((p0) => Card(child: ListTile(onTap: () => Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) => ReadPage(
+                                      surat: p0.latin,
+                                      ind: p0.id - 1))), leading: Text(p0.id.toString()), title: Text(p0.latin)))).toList();
                           return ResponsiveGridList(
                               horizontalGridMargin: 50,
                               verticalGridMargin: 20,
@@ -222,13 +204,9 @@ class _ReadPageS extends State<ReadPage> {
   @override
   void initState() {
     super.initState();
-    _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
     _trans = loadTrans();
-    _data.then((v) => setState(() => title = XmlDocument.parse(v)
-        .getElement("quran")!
-        .childElements
-        .elementAt(widget.ind)
-        .getAttribute("name")));
+    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) => setState(()=>title=Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
     loadTransCache().then((v) => setState(() => cache = v));
   }
 
@@ -289,20 +267,13 @@ class _ReadPageS extends State<ReadPage> {
           future: _data,
           builder: (ctx, snapshot) {
             if (snapshot.hasData) {
-              List<Widget> s = XmlDocument.parse(snapshot.data.toString())
-                  .getElement("quran")!
-                  .childElements
-                  .elementAt(widget.ind)
-                  .childElements
-                  .toList()
-                  .asMap()
-                  .entries
-                  .map((p0) {
+              List<Widget> s = Quran.fromJson(jsonDecode(snapshot.data.toString())).val.where((element) => int.parse(element.id.split(":")[0])-1 == widget.ind).map((p0) {
+                final int key = int.parse(p0.id.split(":")[1])-1;
                 var li = GlobalKey();
                 list.add(li);
                 return Column(key: li, children: [
                   VisibilityDetector(
-                      key: Key(p0.key.toString()),
+                      key: Key(key.toString()),
                       onVisibilityChanged: (VisibilityInfo v) {
                         var vi = v.visibleFraction * 100;
                         int key = int.parse((v.key as ValueKey<String>).value);
@@ -317,11 +288,9 @@ class _ReadPageS extends State<ReadPage> {
                           padding: const EdgeInsets.all(8),
                           child: Column(children: [
                             ListTile(
-                                leading: Text((p0.key + 1).toString()),
+                                leading: Text((key + 1).toString()),
                                 title: Text(
-                                  p0.value.getAttribute("text")! +
-                                      " " +
-                                      nu((p0.key + 1).toString()),
+                                  p0.text,
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
@@ -388,7 +357,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 widget.ind)
                                                             .findAllElements(
                                                                 "aya")
-                                                            .elementAt(p0.key)
+                                                            .elementAt(key)
                                                             .getElement(
                                                                 "translation")!
                                                             .innerText),
@@ -404,7 +373,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 .findAllElements(
                                                                     "aya")
                                                                 .elementAt(
-                                                                    p0.key)
+                                                                    key)
                                                                 .getElement(
                                                                     "footnotes")!
                                                                 .innerText
@@ -423,7 +392,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                     .findAllElements(
                                                                         "aya")
                                                                     .elementAt(
-                                                                        p0.key)
+                                                                        key)
                                                                     .getElement(
                                                                         "footnotes")!
                                                                     .innerText)
