@@ -15,6 +15,6 @@ class QuranVal {
   const QuranVal({required this.id, required this.text});
 
   factory QuranVal.fromJson(Map<String, dynamic> json) {
-    return QuranVal(id: json['verse_key'], text: json['text_uthmani_tajweed']);
+    return QuranVal(id: json['verse_key'], text: json['text_uthmani']);
   }
 }
