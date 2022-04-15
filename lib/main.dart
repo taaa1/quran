@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:quran/d/quran.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
 import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
@@ -209,9 +210,9 @@ class _ReadPageS extends State<ReadPage> {
   @override
   void initState() {
     super.initState();
-    _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
     _trans = loadTrans();
-    _data.then((v) => setState(()=>title=XmlDocument.parse(v).getElement("quran")!.childElements.elementAt(widget.ind).getAttribute("name")));
+    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) => setState(()=>title=Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
     loadTransCache().then((v) => setState(() => cache = v));
   }
 
@@ -271,20 +272,13 @@ class _ReadPageS extends State<ReadPage> {
           future: _data,
           builder: (ctx, snapshot) {
             if (snapshot.hasData) {
-              List<Widget> s = XmlDocument.parse(snapshot.data.toString())
-                  .getElement("quran")!
-                  .childElements
-                  .elementAt(widget.ind)
-                  .childElements
-                  .toList()
-                  .asMap()
-                  .entries
-                  .map((p0) {
+              List<Widget> s = Quran.fromJson(jsonDecode(snapshot.data.toString())).val.where((element) => int.parse(element.id.split(":")[0])-1 == widget.ind).map((p0) {
+                final int key = int.parse(p0.id.split(":")[1])-1;
                 var li = GlobalKey();
                 list.add(li);
                 return Column(key: li, children: [
                   VisibilityDetector(
-                      key: Key(p0.key.toString()),
+                      key: Key(key.toString()),
                       onVisibilityChanged: (VisibilityInfo v) {
                         var vi = v.visibleFraction * 100;
                         int key = int.parse((v.key as ValueKey<String>).value);
@@ -299,9 +293,9 @@ class _ReadPageS extends State<ReadPage> {
                           padding: const EdgeInsets.all(8),
                           child: Column(children: [
                             ListTile(
-                                leading: Text((p0.key + 1).toString()),
+                                leading: Text((key + 1).toString()),
                                 title: Text(
-                                  p0.value.getAttribute("text")!,
+                                  p0.text,
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
@@ -349,7 +343,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 widget.ind)
                                                             .findAllElements(
                                                                 "aya")
-                                                            .elementAt(p0.key)
+                                                            .elementAt(key)
                                                             .getElement(
                                                                 "translation")!
                                                             .innerText),
@@ -365,7 +359,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 .findAllElements(
                                                                     "aya")
                                                                 .elementAt(
-                                                                    p0.key)
+                                                                    key)
                                                                 .getElement(
                                                                     "footnotes")!
                                                                 .innerText
@@ -384,7 +378,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                     .findAllElements(
                                                                         "aya")
                                                                     .elementAt(
-                                                                        p0.key)
+                                                                        key)
                                                                     .getElement(
                                                                         "footnotes")!
                                                                     .innerText)
