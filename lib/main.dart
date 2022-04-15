@@ -320,7 +320,7 @@ class _ReadPageS extends State<ReadPage> {
                             ListTile(
                                 leading: Text((p0.key + 1).toString()),
                                 title: Text(
-                                  p0.value.getAttribute("text")!,
+                                  p0.value.getAttribute("text")!+" "+nu((p0.key+1).toString()),
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
@@ -432,6 +432,14 @@ class _ReadPageS extends State<ReadPage> {
     if (widget.scrollTo != null) {
       Scrollable.ensureVisible(list[widget.scrollTo! - 1].currentContext);
     }
+  }
+
+  String nu(String s) {
+    final l = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    for (var v in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+      s = s.replaceAll(v, l[int.parse(v)]);
+    }
+    return s;
   }
 }
 
