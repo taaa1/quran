@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:quran/d/chapters.dart';
 
 void main() {
   runApp(const App());
@@ -72,7 +73,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _lss = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
+    _lss = DefaultAssetBundle.of(context).loadString("assets/chapters.json");
     StreamingSharedPreferences.instance.then((value) {
       final s = value.getStringList("last", defaultValue: []);
       setState(() => _last = s.getValue());
@@ -121,32 +122,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       future: _lss,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          Iterable k = XmlDocument.parse(snapshot.data!)
-                              .getElement("quran")!
-                              .childElements;
-                          List<Widget> a = k
-                              .toList()
-                              .asMap()
-                              .entries
-                              .map((p0) => Card(
-                                  child: InkWell(
-                                      splashColor: Colors.green,
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => ReadPage(
-                                                    surat: p0.value
-                                                        .getAttribute("name")!,
-                                                    ind: p0.key)));
-                                      },
-                                      child: ListTile(
-                                          title: Text(
-                                              p0.value.getAttribute("name")!,
-                                              style: arabic,
-                                              textScaleFactor: 1.5,
-                                              textAlign: TextAlign.right)))))
-                              .toList();
+                          Chapters js = Chapters.fromJson(jsonDecode(snapshot.data!));
+                          Iterable<Chapter> k = js.chapters;
+                          List<Widget> a = k.map((p0) => Card(child: ListTile(onTap: () => Navigator.push(context, MaterialPageRoute(
+                                  builder: (context) => ReadPage(
+                                      surat: p0.latin,
+                                      ind: p0.id - 1))), leading: Text(p0.id.toString()), title: Text(p0.latin)))).toList();
                           return ResponsiveGridList(
                               horizontalGridMargin: 50,
                               verticalGridMargin: 20,
