@@ -39,6 +39,7 @@ dependencies:
   intl: ^0.17.0
   flutter_localizations:
     sdk: flutter
+  flutter_widget_from_html_core: ^0.8.5+1
 
 dev_dependencies:
   flutter_test:

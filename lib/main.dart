@@ -13,6 +13,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:quran/d/chapters.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
 
 void main() {
   runApp(const App());
@@ -276,6 +277,16 @@ class _ReadPageS extends State<ReadPage> {
                 final int key = int.parse(p0.id.split(":")[1])-1;
                 var li = GlobalKey();
                 list.add(li);
+                final text = HtmlWidget('<p dir="rtl" style="font-size: 2em">${p0.text}</p>', customStylesBuilder: (el) {
+                  final s = [{'color': '#FF00B3'}, {'color': 'red'}, {'color': 'green'}];
+                  switch(el.className) {
+                    case 'madda_necessary': return s[0];
+                    case 'ghunnah': return s[0];
+                    case 'idgham_wo_ghunnah': return s[1];
+                    case 'ikhafa': return s[2];
+                  }
+                  return null;
+                }, textStyle: arabic);
                 return Column(key: li, children: [
                   VisibilityDetector(
                       key: Key(key.toString()),
@@ -294,12 +305,12 @@ class _ReadPageS extends State<ReadPage> {
                           child: Column(children: [
                             ListTile(
                                 leading: Text((key + 1).toString()),
-                                title: Text(
+                                title: text /*Text(
                                   p0.text,
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
-                                )),
+                                )*/),
                             Align(
                                 alignment: Alignment.centerLeft,
                                 child: FutureBuilder(
