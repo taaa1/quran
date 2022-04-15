@@ -44,13 +44,9 @@ class MyApp extends State<App> {
     return MaterialApp(
       title: 'Qur\'an',
       themeMode: dark ? ThemeMode.dark : ThemeMode.light,
-      theme: ThemeData(
-        primarySwatch: Colors.green
-      ),
-      darkTheme: ThemeData(
-        primarySwatch: Colors.green,
-        brightness: Brightness.dark
-      ),
+      theme: ThemeData(primarySwatch: Colors.green),
+      darkTheme:
+          ThemeData(primarySwatch: Colors.green, brightness: Brightness.dark),
       home: const MyHomePage(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -89,10 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
             IconButton(
               icon: const Icon(Icons.settings),
               onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Stg()));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => const Stg()));
               },
               tooltip: AppLocalizations.of(context)!.settings,
             ),
@@ -230,16 +224,21 @@ class _ReadPageS extends State<ReadPage> {
     super.initState();
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.xml");
     _trans = loadTrans();
-    _data.then((v) => setState(()=>title=XmlDocument.parse(v).getElement("quran")!.childElements.elementAt(widget.ind).getAttribute("name")));
+    _data.then((v) => setState(() => title = XmlDocument.parse(v)
+        .getElement("quran")!
+        .childElements
+        .elementAt(widget.ind)
+        .getAttribute("name")));
     loadTransCache().then((v) => setState(() => cache = v));
   }
 
   Future<Trl?> loadTransCache() async {
     final directory = await getApplicationDocumentsDirectory();
-    try{
-      var s = await File("${directory.path}/quran/translation_cache.json").readAsString();
+    try {
+      var s = await File("${directory.path}/quran/translation_cache.json")
+          .readAsString();
       return Trl.fromJson(jsonDecode(s));
-    }catch(e){
+    } catch (e) {
       return null;
     }
   }
@@ -284,7 +283,7 @@ class _ReadPageS extends State<ReadPage> {
   @override
   Widget build(BuildContext build) {
     return Scaffold(
-        appBar: AppBar(title: Text(title??widget.surat, style: arabic)),
+        appBar: AppBar(title: Text(title ?? widget.surat, style: arabic)),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
@@ -320,7 +319,9 @@ class _ReadPageS extends State<ReadPage> {
                             ListTile(
                                 leading: Text((p0.key + 1).toString()),
                                 title: Text(
-                                  p0.value.getAttribute("text")!+" "+nu((p0.key+1).toString()),
+                                  p0.value.getAttribute("text")! +
+                                      " " +
+                                      nu((p0.key + 1).toString()),
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
@@ -352,7 +353,26 @@ class _ReadPageS extends State<ReadPage> {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                            cache?.translations.firstWhere((v) => v.key == e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText).title??e.getElement('translation_root')!.getElement('meta')!.getElement("id")!.innerText,
+                                                            cache?.translations
+                                                                    .firstWhere((v) =>
+                                                                        v.key ==
+                                                                        e
+                                                                            .getElement(
+                                                                                'translation_root')!
+                                                                            .getElement(
+                                                                                'meta')!
+                                                                            .getElement(
+                                                                                "id")!
+                                                                            .innerText)
+                                                                    .title ??
+                                                                e
+                                                                    .getElement(
+                                                                        'translation_root')!
+                                                                    .getElement(
+                                                                        'meta')!
+                                                                    .getElement(
+                                                                        "id")!
+                                                                    .innerText,
                                                             style: const TextStyle(
                                                                 fontWeight:
                                                                     FontWeight
@@ -482,18 +502,17 @@ class SettingsPage extends State<Stg> {
             },
           ),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.darkMode),
-            leading: const Icon(Icons.dark_mode),
-            trailing: Switch(value: dm, onChanged: update),
-            onTap: ()=>update(!dm)
-          )
+              title: Text(AppLocalizations.of(context)!.darkMode),
+              leading: const Icon(Icons.dark_mode),
+              trailing: Switch(value: dm, onChanged: update),
+              onTap: () => update(!dm))
         ],
       )),
     );
   }
 
   void update(bool b) {
-    StreamingSharedPreferences.instance.then((v)=>v.setBool("dark", b));
+    StreamingSharedPreferences.instance.then((v) => v.setBool("dark", b));
   }
 }
 
@@ -521,7 +540,8 @@ class _Tp extends State<TranslationsPage> {
 
   void write(String s) async {
     final directory = await getApplicationDocumentsDirectory();
-    if (!Directory('${directory.path}/quran/').existsSync()) Directory('${directory.path}/quran/').createSync(recursive: true);
+    if (!Directory('${directory.path}/quran/').existsSync())
+      Directory('${directory.path}/quran/').createSync(recursive: true);
     File("${directory.path}/quran/translation_cache.json").writeAsString(s);
   }
 
@@ -774,6 +794,7 @@ class Info extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Center(
                 child: Column(children: [
+              const Image(image: AssetImage("icon.png"), width: 140, height: 140),
               Text("Qur'an", style: Theme.of(context).textTheme.headlineMedium),
               Text(AppLocalizations.of(context)!.about1),
               Text(AppLocalizations.of(context)!.about2)
