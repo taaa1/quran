@@ -78,7 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       final d = value.getBool("ar", defaultValue: false);
       setState(() => ar = d.getValue());
-      d.listen((value) => setState(()=>ar=value));
+      d.listen((value) => setState(() => ar = value));
     });
   }
 
@@ -121,12 +121,26 @@ class _MyHomePageState extends State<MyHomePage> {
                       future: _lss,
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          Chapters js = Chapters.fromJson(jsonDecode(snapshot.data!));
+                          Chapters js =
+                              Chapters.fromJson(jsonDecode(snapshot.data!));
                           Iterable<Chapter> k = js.chapters;
-                          List<Widget> a = k.map((p0) => Card(child: ListTile(onTap: () => Navigator.push(context, MaterialPageRoute(
-                                  builder: (context) => ReadPage(
-                                      surat: p0.latin,
-                                      ind: p0.id - 1))), leading: Text(p0.id.toString()), title: Text(ar?p0.arabic:p0.latin, style: ar?arabic:null, textScaleFactor: ar?1.5:null, locale: ar?const Locale('ar'):const Locale('en'))))).toList();
+                          List<Widget> a = k
+                              .map((p0) => Card(
+                                  child: ListTile(
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => ReadPage(
+                                                  surat: p0.latin,
+                                                  ind: p0.id - 1))),
+                                      leading: Text(p0.id.toString()),
+                                      title: Text(ar ? p0.arabic : p0.latin,
+                                          style: ar ? arabic : null,
+                                          textScaleFactor: ar ? 1.5 : null,
+                                          locale: ar
+                                              ? const Locale('ar')
+                                              : const Locale('en')))))
+                              .toList();
                           return ResponsiveGridList(
                               horizontalGridMargin: 50,
                               verticalGridMargin: 20,
@@ -210,7 +224,9 @@ class _ReadPageS extends State<ReadPage> {
     super.initState();
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
     _trans = loadTrans();
-    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) => setState(()=>title=Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
+    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then(
+        (v) => setState(() => title =
+            Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
     loadTransCache().then((v) => setState(() => cache = v));
   }
 
@@ -235,7 +251,8 @@ class _ReadPageS extends State<ReadPage> {
 
     return Directory('${directory.path}/quran/translations/')
         .listSync()
-        .map((e) => Translation.fromJson(jsonDecode(File(e.path).readAsStringSync())))
+        .map((e) =>
+            Translation.fromJson(jsonDecode(File(e.path).readAsStringSync())))
         .toList();
   }
 
@@ -271,8 +288,13 @@ class _ReadPageS extends State<ReadPage> {
           future: _data,
           builder: (ctx, snapshot) {
             if (snapshot.hasData) {
-              List<Widget> s = Quran.fromJson(jsonDecode(snapshot.data.toString())).val.where((element) => int.parse(element.id.split(":")[0])-1 == widget.ind).map((p0) {
-                final int key = int.parse(p0.id.split(":")[1])-1;
+              List<Widget> s =
+                  Quran.fromJson(jsonDecode(snapshot.data.toString()))
+                      .val
+                      .where((element) =>
+                          int.parse(element.id.split(":")[0]) - 1 == widget.ind)
+                      .map((p0) {
+                final int key = int.parse(p0.id.split(":")[1]) - 1;
                 var li = GlobalKey();
                 list.add(li);
                 return Column(key: li, children: [
@@ -294,7 +316,7 @@ class _ReadPageS extends State<ReadPage> {
                             ListTile(
                                 leading: Text((key + 1).toString()),
                                 title: Text(
-                                  p0.text+" "+nu((key+1).toString()),
+                                  p0.text + " " + nu((key + 1).toString()),
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
@@ -329,7 +351,14 @@ class _ReadPageS extends State<ReadPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        Text(e.translations[p0.i-1].text.replaceAll(RegExp(r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'), '')), //TODO: show footnotes
+                                                        Text(e
+                                                            .translations[
+                                                                p0.i - 1]
+                                                            .text
+                                                            .replaceAll(
+                                                                RegExp(
+                                                                    r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'),
+                                                                '')), //TODO: show footnotes
                                                         const Divider()
                                                       ])))
                                               .toList());
@@ -375,6 +404,7 @@ class Stg extends StatefulWidget {
 class SettingsPage extends State<Stg> {
   bool dm = false;
   bool ar = false;
+  List<StreamSubscription> p = [];
 
   @override
   void initState() {
@@ -382,12 +412,20 @@ class SettingsPage extends State<Stg> {
     StreamingSharedPreferences.instance.then((value) {
       final s = value.getBool("dark", defaultValue: false);
       setState(() => dm = s.getValue());
-      s.listen((value) => setState(() => dm = value));
+      p.add(s.listen((value) => setState(() => dm = value)));
 
       final d = value.getBool("ar", defaultValue: false);
       setState(() => ar = d.getValue());
-      d.listen((value) => setState(() => ar = value));
+      p.add(d.listen((value) => setState(() => ar = value)));
     });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    for (var element in p) {
+      element.cancel();
+    }
   }
 
   @override
@@ -414,11 +452,10 @@ class SettingsPage extends State<Stg> {
               trailing: Switch(value: dm, onChanged: (s) => update(s, "dark")),
               onTap: () => update(!dm, "dark")),
           ListTile(
-            title: Text(AppLocalizations.of(context)!.arabicName),
-            leading: const Icon(Icons.list),
-            trailing: Switch(onChanged: (b) => update(b, "ar"), value: ar),
-            onTap: () => update(!ar, "ar")
-          )
+              title: Text(AppLocalizations.of(context)!.arabicName),
+              leading: const Icon(Icons.list),
+              trailing: Switch(onChanged: (b) => update(b, "ar"), value: ar),
+              onTap: () => update(!ar, "ar"))
         ],
       )),
     );
@@ -464,7 +501,8 @@ class Info extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Center(
                 child: Column(children: [
-              const Image(image: AssetImage("icon.png"), width: 140, height: 140),
+              const Image(
+                  image: AssetImage("icon.png"), width: 140, height: 140),
               Text("Qur'an", style: Theme.of(context).textTheme.headlineMedium),
               Text(AppLocalizations.of(context)!.about2)
             ]))));
