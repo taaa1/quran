@@ -65,6 +65,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   late Future<String> _lss;
   List<String>? _last;
+  bool ar = false;
 
   @override
   void initState() {
@@ -74,6 +75,10 @@ class _MyHomePageState extends State<MyHomePage> {
       final s = value.getStringList("last", defaultValue: []);
       setState(() => _last = s.getValue());
       s.listen((value) => setState(() => _last = value));
+
+      final d = value.getBool("ar", defaultValue: false);
+      setState(() => ar = d.getValue());
+      d.listen((value) => setState(()=>ar=value));
     });
   }
 
@@ -121,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           List<Widget> a = k.map((p0) => Card(child: ListTile(onTap: () => Navigator.push(context, MaterialPageRoute(
                                   builder: (context) => ReadPage(
                                       surat: p0.latin,
-                                      ind: p0.id - 1))), leading: Text(p0.id.toString()), title: Text(p0.latin)))).toList();
+                                      ind: p0.id - 1))), leading: Text(p0.id.toString()), title: Text(ar?p0.arabic:p0.latin, style: ar?arabic:null, textScaleFactor: ar?1.5:null, locale: ar?const Locale('ar'):const Locale('en'))))).toList();
                           return ResponsiveGridList(
                               horizontalGridMargin: 50,
                               verticalGridMargin: 20,
@@ -369,6 +374,7 @@ class Stg extends StatefulWidget {
 
 class SettingsPage extends State<Stg> {
   bool dm = false;
+  bool ar = false;
 
   @override
   void initState() {
@@ -377,6 +383,10 @@ class SettingsPage extends State<Stg> {
       final s = value.getBool("dark", defaultValue: false);
       setState(() => dm = s.getValue());
       s.listen((value) => setState(() => dm = value));
+
+      final d = value.getBool("ar", defaultValue: false);
+      setState(() => ar = d.getValue());
+      d.listen((value) => setState(() => ar = value));
     });
   }
 
@@ -401,15 +411,21 @@ class SettingsPage extends State<Stg> {
           ListTile(
               title: Text(AppLocalizations.of(context)!.darkMode),
               leading: const Icon(Icons.dark_mode),
-              trailing: Switch(value: dm, onChanged: update),
-              onTap: () => update(!dm))
+              trailing: Switch(value: dm, onChanged: (s) => update(s, "dark")),
+              onTap: () => update(!dm, "dark")),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.arabicName),
+            leading: const Icon(Icons.list),
+            trailing: Switch(onChanged: (b) => update(b, "ar"), value: ar),
+            onTap: () => update(!ar, "ar")
+          )
         ],
       )),
     );
   }
 
-  void update(bool b) {
-    StreamingSharedPreferences.instance.then((v) => v.setBool("dark", b));
+  void update(bool b, String c) {
+    StreamingSharedPreferences.instance.then((v) => v.setBool(c, b));
   }
 }
 
