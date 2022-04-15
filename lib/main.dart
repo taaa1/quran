@@ -320,6 +320,7 @@ class _ReadPageS extends State<ReadPage> {
                                   textScaleFactor: 2,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
+                                  locale: const Locale('ar'),
                                 )),
                             Align(
                                 alignment: Alignment.centerLeft,
