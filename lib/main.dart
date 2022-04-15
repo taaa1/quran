@@ -218,6 +218,7 @@ class _ReadPageS extends State<ReadPage> {
   List list = [];
   String? title;
   Trl? cache;
+  bool aus = true;
 
   @override
   void initState() {
@@ -228,6 +229,8 @@ class _ReadPageS extends State<ReadPage> {
         (v) => setState(() => title =
             Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
     loadTransCache().then((v) => setState(() => cache = v));
+    StreamingSharedPreferences.instance.then((v) =>
+        setState(() => aus = v.getBool("pos", defaultValue: true).getValue()));
   }
 
   Future<Trl?> loadTransCache() async {
@@ -281,8 +284,20 @@ class _ReadPageS extends State<ReadPage> {
 
   @override
   Widget build(BuildContext build) {
+    List<Widget> ac = [];
+    if (!aus) {
+      ac.add(IconButton(
+          onPressed: () {
+            update(ss.reduce(min));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(AppLocalizations.of(context)!.posSaved)));
+          },
+          icon: const Icon(Icons.bookmark),
+          tooltip: AppLocalizations.of(context)!.savePos));
+    }
+
     return Scaffold(
-        appBar: AppBar(title: Text(title ?? widget.surat, style: arabic)),
+        appBar: AppBar(title: Text(title ?? widget.surat), actions: ac),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
@@ -308,7 +323,7 @@ class _ReadPageS extends State<ReadPage> {
                         } else {
                           ss.remove(key);
                         }
-                        if (ss.isNotEmpty) update(ss.reduce(min));
+                        if (ss.isNotEmpty && aus) update(ss.reduce(min));
                       },
                       child: Container(
                           padding: const EdgeInsets.all(8),
@@ -405,6 +420,7 @@ class Stg extends StatefulWidget {
 class SettingsPage extends State<Stg> {
   bool dm = false;
   bool ar = false;
+  bool pos = true;
   List<StreamSubscription> p = [];
 
   @override
@@ -418,6 +434,10 @@ class SettingsPage extends State<Stg> {
       final d = value.getBool("ar", defaultValue: false);
       setState(() => ar = d.getValue());
       p.add(d.listen((value) => setState(() => ar = value)));
+
+      final o = value.getBool("pos", defaultValue: true);
+      setState(() => pos = o.getValue());
+      p.add(o.listen((value) => setState(() => pos = value)));
     });
   }
 
@@ -450,13 +470,18 @@ class SettingsPage extends State<Stg> {
           SwitchListTile(
               title: Text(AppLocalizations.of(context)!.darkMode),
               secondary: const Icon(Icons.dark_mode),
-              value: dm, 
+              value: dm,
               onChanged: (s) => update(s, "dark")),
           SwitchListTile(
               title: Text(AppLocalizations.of(context)!.arabicName),
               secondary: const Icon(Icons.list),
               onChanged: (b) => update(b, "ar"),
-              value: ar)
+              value: ar),
+          SwitchListTile(
+              title: Text(AppLocalizations.of(context)!.autosavePos),
+              secondary: const Icon(Icons.bookmark),
+              value: pos,
+              onChanged: (b) => update(b, "pos"))
         ],
       )),
     );
