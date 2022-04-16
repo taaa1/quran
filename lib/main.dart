@@ -219,21 +219,28 @@ class _ReadPageS extends State<ReadPage> {
   String? title;
   bool aus = true;
   double size = 2;
+  bool ar = false;
 
   @override
   void initState() {
     super.initState();
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
     _trans = loadTrans();
-    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then(
-        (v) => setState(() => title =
-            Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
-    StreamingSharedPreferences.instance.then((v) => {
+    StreamingSharedPreferences.instance.then((v) {
           setState(() {
             aus = v.getBool("pos", defaultValue: true).getValue();
             size = v.getDouble("asize", defaultValue: 2).getValue();
-          })
+            ar = v.getBool("ar", defaultValue: false).getValue();
+          });
+          updateTitle();
         });
+  }
+
+  void updateTitle() {
+    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) {
+      final s = Chapters.fromJson(jsonDecode(v)).chapters[widget.ind];
+      setState(() => title = ar ? s.arabic : s.latin);
+    });
   }
 
   Future<List<Translation>> loadTrans() async {
@@ -289,7 +296,7 @@ class _ReadPageS extends State<ReadPage> {
     }
 
     return Scaffold(
-        appBar: AppBar(title: Text(title ?? widget.surat), actions: ac),
+        appBar: AppBar(title: Text(title ?? widget.surat, style: ar ? arabic : null, textScaleFactor: ar ? 1.5 : null), actions: ac),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
