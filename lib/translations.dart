@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:responsive_grid_list/responsive_grid_list.dart';
+import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 
 class TranslationsPage extends StatefulWidget {
   const TranslationsPage({Key? key}) : super(key: key);
@@ -61,35 +62,11 @@ class _Tp extends State<TranslationsPage> {
     watch?.cancel();
   }
 
-  void delete(String key) async {
-    final directory = await getApplicationDocumentsDirectory();
-
-    File('${directory.path}/quran/translations/$key.json').deleteSync();
-  }
-
   @override
   Widget build(BuildContext context) {
     late Widget installed;
     if (_installed != null) {
-      List<Widget> s = _installed!
-          .map((e) => Card(
-              key: Key(e.key),
-              child: Column(children: [
-                ListTile(
-                  title: Text(e.title),
-                  leading: const Icon(Icons.translate),
-                  subtitle: Text(e.description),
-                ),
-                ButtonBar(
-                  alignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                        onPressed: () => delete(e.key),
-                        child: Text(AppLocalizations.of(context)!.delete))
-                  ],
-                )
-              ])))
-          .toList();
+      List<Widget> s = _installed!.map((e) => Installed(e: e)).toList();
       installed = (s.isEmpty)
           ? Text(AppLocalizations.of(context)!.noInstalledTranslations,
               textAlign: TextAlign.center,
@@ -202,6 +179,76 @@ class _TranslationWidget extends State<TranslationWidget> {
                   .then((_) => setState(() => _isLoading = false));
             },
             isThreeLine: true));
+  }
+}
+
+class Installed extends StatefulWidget {
+  const Installed({required this.e}) : super();
+
+  final TranslationList e;
+
+  @override
+  State<Installed> createState() => _Installed();
+}
+
+class _Installed extends State<Installed> {
+  List<String> s = [];
+  StreamSubscription? p;
+
+  @override
+  void initState() {
+    super.initState();
+    StreamingSharedPreferences.instance.then((v) {
+      final ls = v.getStringList("disabledt", defaultValue: []);
+      setState(() => s = ls.getValue());
+      p = ls.listen((value) => setState(() => s = value));
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    p?.cancel();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+        key: Key(widget.e.key),
+        child: Column(children: [
+          ListTile(
+            title: Text(widget.e.title),
+            leading: const Icon(Icons.translate),
+            subtitle: Text(widget.e.description),
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Switch(value: !s.contains(widget.e.key), onChanged: tog),
+            ButtonBar(
+              alignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                    onPressed: () => delete(widget.e.key),
+                    child: Text(AppLocalizations.of(context)!.delete))
+              ],
+            )
+          ])
+        ]));
+  }
+
+  void tog(bool m) async {
+    if (m) {
+      s.remove(widget.e.key);
+    } else {
+      if (!s.contains(widget.e.key)) s.add(widget.e.key);
+    }
+    StreamingSharedPreferences.instance
+        .then((v) => v.setStringList("disabledt", s));
+  }
+
+  void delete(String key) async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    File('${directory.path}/quran/translations/$key.json').deleteSync();
   }
 }
 

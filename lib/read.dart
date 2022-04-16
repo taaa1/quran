@@ -36,6 +36,7 @@ class _ReadPageS extends State<ReadPage> {
   double size = 2;
   bool ar = false;
   bool ha = true;
+  List<String> dis = [];
 
   @override
   void initState() {
@@ -47,6 +48,7 @@ class _ReadPageS extends State<ReadPage> {
         aus = v.getBool("pos", defaultValue: true).getValue();
         size = v.getDouble("asize", defaultValue: 2).getValue();
         ar = v.getBool("ar", defaultValue: false).getValue();
+        dis = v.getStringList("disabledt", defaultValue: []).getValue();
       });
       updateTitle();
     });
@@ -122,13 +124,16 @@ class _ReadPageS extends State<ReadPage> {
         body: SingleChildScrollView(
             child: Column(children: [
           ha
-              ? Column(children: [Text(
-                  t,
-                  textScaleFactor: size,
-                  style: arabic,
-                  textDirection: TextDirection.rtl,
-                  locale: const Locale('ar'),
-                ), const Divider()])
+              ? Column(children: [
+                  Text(
+                    t,
+                    textScaleFactor: size,
+                    style: arabic,
+                    textDirection: TextDirection.rtl,
+                    locale: const Locale('ar'),
+                  ),
+                  const Divider()
+                ])
               : Container(),
           FutureBuilder(
             future: _data,
@@ -178,11 +183,14 @@ class _ReadPageS extends State<ReadPage> {
                                         WidgetsBinding.instance!
                                             .addPostFrameCallback(
                                                 (_) => scroll());
+
+                                        var f = snapshot.data!;
+                                        f.removeWhere((v) => dis.contains(v.meta.key));
+
                                         return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                            children: snapshot.data!
-                                                .map((e) => Container(
+                                            children: f.map((e) => Container(
                                                     padding:
                                                         const EdgeInsets.only(
                                                             left: 16),
