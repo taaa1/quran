@@ -90,6 +90,7 @@ class SettingsPage extends State<Stg> {
           ListTile(
               title: Text(AppLocalizations.of(context)!.textSize),
               leading: const Icon(Icons.format_size),
+              subtitle: Text(size.toString()),
               onTap: () => showDialog<double>(
                       context: context, builder: (ctx) => SizeDialog(s: size))
                   .then(
