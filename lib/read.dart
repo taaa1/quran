@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:ui';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'd/quran.dart';
 import 'package:path_provider/path_provider.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'translations.dart';
 import 'd/chapters.dart';
 import 'arabic.dart';
+import 'fn.dart';
 
 class ReadPage extends StatefulWidget {
   const ReadPage(
@@ -185,39 +188,51 @@ class _ReadPageS extends State<ReadPage> {
                                                 (_) => scroll());
 
                                         var f = snapshot.data!;
-                                        f.removeWhere((v) => dis.contains(v.meta.key));
+                                        f.removeWhere(
+                                            (v) => dis.contains(v.meta.key));
 
                                         return Column(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,
-                                            children: f.map((e) => Container(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            left: 16),
-                                                    constraints:
-                                                        const BoxConstraints(
-                                                            maxWidth: 600),
-                                                    child: Column(
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
-                                                        children: [
-                                                          Text(e.meta.title,
-                                                              style: const TextStyle(
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold)),
-                                                          Text(e
-                                                              .translations[
-                                                                  p0.i - 1]
-                                                              .text
-                                                              .replaceAll(
-                                                                  RegExp(
-                                                                      r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'),
-                                                                  '')), //TODO: show footnotes
-                                                          const Divider()
-                                                        ])))
-                                                .toList());
+                                            children: f.map((e) {
+                                              List<InlineSpan> f = [];
+
+                                              final t = e
+                                                      .translations[p0.i - 1]
+                                                      .text;
+
+                                              int last = 0;
+
+                                              RegExp(r'\<sup foot\_note\=\"?(\d*)\"?\>(\d*)\<\/sup\>')
+                                                  .allMatches(t).forEach((element) {
+                                                        f.add(TextSpan(text: t.substring(last, element.start)));
+                                                        f.add(TextSpan(text: element.group(2)!, style: const TextStyle(fontFeatures: [FontFeature.superscripts()], color: Colors.green), recognizer: TapGestureRecognizer()..onTap = () => showDialog(builder: (ctx) => Footnotes(fn: element.group(1)!), context: context)));
+                                                        last = element.end;
+                                                      });
+
+                                              f.add(TextSpan(text: t.substring(last)));
+
+                                              return Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 16),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 600),
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(e.meta.title,
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                        Text.rich(TextSpan(children: f)), //TODO: show footnotes
+                                                        const Divider()
+                                                      ]));
+                                            }).toList());
                                       }
                                       return const CircularProgressIndicator();
                                     },
