@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'i18n.dart';
+import 'package:intl/intl.dart' as intl;
 import 'arabic.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -91,7 +93,30 @@ class SettingsPage extends State<Stg> {
                   .then(
                       (value) => StreamingSharedPreferences.instance.then((v) {
                             v.setDouble("asize", value!);
-                          })))
+                          }))),
+          ListTile(
+            title: Text(AppLocalizations.of(context)!.language),
+            leading: const Icon(Icons.language),
+            onTap: () => showDialog(
+                context: context,
+                builder: (ctx) => SimpleDialog(
+                      title: Text(AppLocalizations.of(context)!.language),
+                      children: AppLocalizations.supportedLocales
+                          .map((v) => SimpleDialogOption(
+                              child: Text(lang[intl.Intl.canonicalizedLocale(
+                                      v.toLanguageTag())] ??
+                                  ""),
+                              onPressed: () {
+                                StreamingSharedPreferences.instance.then(
+                                    (val) => val.setString(
+                                        "lang",
+                                        intl.Intl.canonicalizedLocale(
+                                            v.toLanguageTag())));
+                                Navigator.pop(context);
+                              }))
+                          .toList(),
+                    )),
+          )
         ],
       )),
     );

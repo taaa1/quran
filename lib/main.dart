@@ -16,6 +16,7 @@ class App extends StatefulWidget {
 
 class MyApp extends State<App> {
   bool dark = false;
+  String lang = "en";
 
   @override
   void initState() {
@@ -25,6 +26,10 @@ class MyApp extends State<App> {
       final s = value.getBool("dark", defaultValue: false);
       setState(() => dark = s.getValue());
       s.listen((value) => setState(() => dark = value));
+
+      final l = value.getString("lang", defaultValue: "en");
+      setState(() => lang = l.getValue());
+      l.listen((value) => setState(() => lang = value));
     });
   }
 
@@ -39,6 +44,7 @@ class MyApp extends State<App> {
       home: const MyHomePage(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: Locale(lang),
     );
   }
 }

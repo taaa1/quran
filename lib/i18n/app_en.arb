@@ -1,0 +1,22 @@
+{
+  "head": "What'd you like to read today?",
+  "head2": "Read...",
+  "head3": "Last Read",
+  "settings": "Settings",
+  "about": "About",
+  "translation": "Translations",
+  "delete": "Remove",
+  "noInstalledTranslations": "No translation is installed.\nChoose a translation below to install.",
+  "installed": "Installed",
+  "available": "Available",
+  "footnote": "Footnote",
+  "about2": "Qur'an data & translations from quran.com",
+  "darkMode": "Dark Mode",
+  "arabicName": "Use Arabic Text for Sura Names",
+  "autosavePos": "Auto-Save Position",
+  "savePos": "Save position",
+  "posSaved": "Position saved.",
+  "textSize": "Text Size",
+  "ok": "OK",
+  "language": "Language"
+}
