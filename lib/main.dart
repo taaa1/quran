@@ -227,13 +227,13 @@ class _ReadPageS extends State<ReadPage> {
     _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
     _trans = loadTrans();
     StreamingSharedPreferences.instance.then((v) {
-          setState(() {
-            aus = v.getBool("pos", defaultValue: true).getValue();
-            size = v.getDouble("asize", defaultValue: 2).getValue();
-            ar = v.getBool("ar", defaultValue: false).getValue();
-          });
-          updateTitle();
-        });
+      setState(() {
+        aus = v.getBool("pos", defaultValue: true).getValue();
+        size = v.getDouble("asize", defaultValue: 2).getValue();
+        ar = v.getBool("ar", defaultValue: false).getValue();
+      });
+      updateTitle();
+    });
   }
 
   void updateTitle() {
@@ -296,7 +296,10 @@ class _ReadPageS extends State<ReadPage> {
     }
 
     return Scaffold(
-        appBar: AppBar(title: Text(title ?? widget.surat, style: ar ? arabic : null, textScaleFactor: ar ? 1.5 : null), actions: ac),
+        appBar: AppBar(
+            title: Text(title ?? widget.surat,
+                style: ar ? arabic : null, textScaleFactor: ar ? 1.5 : null),
+            actions: ac),
         body: SingleChildScrollView(
             child: FutureBuilder(
           future: _data,
