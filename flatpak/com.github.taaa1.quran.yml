@@ -2,7 +2,7 @@ app-id: com.github.taaa1.quran
 runtime: org.freedesktop.Platform
 runtime-version: '21.08'
 sdk: org.freedesktop.Sdk
-command: run.sh
+command: /app/quran/quran
 separate-locales: false
 finish-args:
   - --share=ipc
@@ -22,7 +22,7 @@ modules:
       - install -Dm644 com.github.taaa1.quran.desktop /app/share/applications/com.github.taaa1.quran.desktop
       - cp quran /app/quran/
       - chmod +x /app/quran/quran
-      - install -Dm755 -t /app/bin/ run.sh
+      - install -Dm755 -t /app/bin/ /app/quran/quran
     sources:
       - type: dir
         path: ../build/linux/x64/release/bundle
@@ -30,7 +30,3 @@ modules:
         path: ../icon.svg
       - type: file
         path: com.github.taaa1.quran.desktop
-      - type: script
-        dest-filename: run.sh
-        commands:
-          - /app/quran/quran

@@ -2,6 +2,6 @@
 Type=Application
 Name=Qur'an
 Icon=com.github.taaa1.quran
-Exec=run.sh
+Exec=/app/quran/quran
 Comment=Read the Qur'an
 Categories=X-Islamic-Software;X-Quran;Education;
