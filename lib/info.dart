@@ -7,7 +7,7 @@ class Info extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Tentang")),
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.about)),
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: Center(
