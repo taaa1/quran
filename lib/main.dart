@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'i18n.dart' as i;
 
 void main() {
   runApp(const App());
@@ -43,7 +44,7 @@ class MyApp extends State<App> {
           ThemeData(primarySwatch: Colors.green, brightness: Brightness.dark),
       home: const MyHomePage(),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+      supportedLocales: i.lang.keys.map((e) => Locale(e)),
       locale: Locale(lang),
     );
   }
