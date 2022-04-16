@@ -17,7 +17,7 @@ void main() {
   runApp(const App());
 }
 
-const TextStyle arabic = TextStyle(fontFamily: 'Uthmani');
+const TextStyle arabic = TextStyle(fontFamily: 'Uthmani', fontSize: 16);
 
 class App extends StatefulWidget {
   const App({Key? key}) : super(key: key);
@@ -219,6 +219,7 @@ class _ReadPageS extends State<ReadPage> {
   String? title;
   Trl? cache;
   bool aus = true;
+  double size = 2;
 
   @override
   void initState() {
@@ -229,8 +230,12 @@ class _ReadPageS extends State<ReadPage> {
         (v) => setState(() => title =
             Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
     loadTransCache().then((v) => setState(() => cache = v));
-    StreamingSharedPreferences.instance.then((v) =>
-        setState(() => aus = v.getBool("pos", defaultValue: true).getValue()));
+    StreamingSharedPreferences.instance.then((v) => {
+      setState(() {
+        aus = v.getBool("pos", defaultValue: true).getValue();
+        size = v.getDouble("asize", defaultValue: 2).getValue();
+      })
+    });
   }
 
   Future<Trl?> loadTransCache() async {
@@ -332,7 +337,7 @@ class _ReadPageS extends State<ReadPage> {
                                 leading: Text((key + 1).toString()),
                                 title: Text(
                                   p0.text + " " + nu((key + 1).toString()),
-                                  textScaleFactor: 2,
+                                  textScaleFactor: size,
                                   style: arabic,
                                   textDirection: TextDirection.rtl,
                                   locale: const Locale('ar'),
@@ -421,6 +426,7 @@ class SettingsPage extends State<Stg> {
   bool dm = false;
   bool ar = false;
   bool pos = true;
+  double size = 2;
   List<StreamSubscription> p = [];
 
   @override
@@ -438,6 +444,10 @@ class SettingsPage extends State<Stg> {
       final o = value.getBool("pos", defaultValue: true);
       setState(() => pos = o.getValue());
       p.add(o.listen((value) => setState(() => pos = value)));
+
+      final z = value.getDouble("asize", defaultValue: 2);
+      setState(() => size = z.getValue());
+      p.add(z.listen((value) => setState(() => size = value)));
     });
   }
 
@@ -481,7 +491,16 @@ class SettingsPage extends State<Stg> {
               title: Text(AppLocalizations.of(context)!.autosavePos),
               secondary: const Icon(Icons.bookmark),
               value: pos,
-              onChanged: (b) => update(b, "pos"))
+              onChanged: (b) => update(b, "pos")),
+          ListTile(
+              title: Text(AppLocalizations.of(context)!.textSize),
+              leading: const Icon(Icons.format_size),
+              onTap: () => showDialog<double>(
+                      context: context, builder: (ctx) => SizeDialog(s: size))
+                  .then(
+                      (value) => StreamingSharedPreferences.instance.then((v) {
+                            v.setDouble("asize", value!);
+                          })))
         ],
       )),
     );
@@ -489,6 +508,63 @@ class SettingsPage extends State<Stg> {
 
   void update(bool b, String c) {
     StreamingSharedPreferences.instance.then((v) => v.setBool(c, b));
+  }
+}
+
+class SizeDialog extends StatefulWidget {
+  const SizeDialog({Key? key, required this.s}) : super(key: key);
+
+  final double s;
+
+  @override
+  State<SizeDialog> createState() => _SizeDialog();
+}
+
+class _SizeDialog extends State<SizeDialog> {
+  double s = 2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    setState(() => s = widget.s);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const t = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
+
+    return Dialog(
+        child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(12),
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(AppLocalizations.of(context)!.textSize,
+                      textAlign: TextAlign.start,
+                      style: Theme.of(context).textTheme.headline6),
+                  Text(
+                    t,
+                    textScaleFactor: s,
+                    style: arabic,
+                    textDirection: TextDirection.rtl,
+                    locale: const Locale('ar'),
+                  ),
+                  Slider(
+                      value: s,
+                      onChanged: (v) => setState(() => s = v),
+                      min: 1,
+                      max: 3,
+                      divisions: 10,
+                      autofocus: true,
+                      label: s.toString()),
+                  Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                          onPressed: () => Navigator.pop(context, s),
+                          child: Text(AppLocalizations.of(context)!.ok)))
+                ])));
   }
 }
 

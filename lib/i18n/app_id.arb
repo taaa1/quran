@@ -15,5 +15,7 @@
   "arabicName": "Gunakan Teks Arab untuk Nama Surat",
   "autosavePos": "Simpan Posisi secara Otomatis",
   "savePos": "Simpan posisi",
-  "posSaved": "Posisi tersimpan."
+  "posSaved": "Posisi tersimpan.",
+  "textSize": "Ukuran Teks",
+  "ok": "OK"
 }
