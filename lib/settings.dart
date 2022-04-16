@@ -123,8 +123,6 @@ class _SizeDialog extends State<SizeDialog> {
 
   @override
   Widget build(BuildContext context) {
-    const t = "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ";
-
     return Dialog(
         child: Container(
             width: 400,

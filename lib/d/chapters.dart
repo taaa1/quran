@@ -12,10 +12,11 @@ class Chapter {
   final String arabic;
   final String latin;
   final int id;
+  final bool pre;
 
-  const Chapter({required this.arabic, required this.latin, required this.id});
+  const Chapter({required this.arabic, required this.latin, required this.id, required this.pre});
 
   factory Chapter.fromJson(Map<String, dynamic> json) {
-    return Chapter(arabic: json['name_arabic'], latin: json['name_simple'], id: json['id']);
+    return Chapter(arabic: json['name_arabic'], latin: json['name_simple'], id: json['id'], pre: json['bismillah_pre']);
   }
 }

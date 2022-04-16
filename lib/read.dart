@@ -35,6 +35,7 @@ class _ReadPageS extends State<ReadPage> {
   bool aus = true;
   double size = 2;
   bool ar = false;
+  bool ha = true;
 
   @override
   void initState() {
@@ -54,7 +55,10 @@ class _ReadPageS extends State<ReadPage> {
   void updateTitle() {
     DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) {
       final s = Chapters.fromJson(jsonDecode(v)).chapters[widget.ind];
-      setState(() => title = ar ? s.arabic : s.latin);
+      setState(() {
+        title = ar ? s.arabic : s.latin;
+        ha = s.pre;
+      });
     });
   }
 
@@ -116,100 +120,112 @@ class _ReadPageS extends State<ReadPage> {
                 style: ar ? arabic : null, textScaleFactor: ar ? 1.5 : null),
             actions: ac),
         body: SingleChildScrollView(
-            child: FutureBuilder(
-          future: _data,
-          builder: (ctx, snapshot) {
-            if (snapshot.hasData) {
-              List<Widget> s =
-                  Quran.fromJson(jsonDecode(snapshot.data.toString()))
-                      .val
-                      .where((element) =>
-                          int.parse(element.id.split(":")[0]) - 1 == widget.ind)
-                      .map((p0) {
-                final int key = int.parse(p0.id.split(":")[1]) - 1;
-                var li = GlobalKey();
-                list.add(li);
-                return Column(key: li, children: [
-                  VisibilityDetector(
-                      key: Key(key.toString()),
-                      onVisibilityChanged: (VisibilityInfo v) {
-                        var vi = v.visibleFraction * 100;
-                        int key = int.parse((v.key as ValueKey<String>).value);
-                        if (vi > 40) {
-                          if (!ss.contains(key)) ss.add(key);
-                        } else {
-                          ss.remove(key);
-                        }
-                        if (ss.isNotEmpty && aus) update(ss.reduce(min));
-                      },
-                      child: Container(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(children: [
-                            ListTile(
-                                leading: Text((key + 1).toString()),
-                                title: Text(
-                                  p0.text + " " + nu((key + 1).toString()),
-                                  textScaleFactor: size,
-                                  style: arabic,
-                                  textDirection: TextDirection.rtl,
-                                  locale: const Locale('ar'),
-                                )),
-                            Align(
-                                alignment: Alignment.centerLeft,
-                                child: FutureBuilder<List<Translation>>(
-                                  future: _trans,
-                                  builder: (_, snapshot) {
-                                    if (snapshot.hasData) {
-                                      WidgetsBinding.instance!
-                                          .addPostFrameCallback(
-                                              (_) => scroll());
-                                      return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: snapshot.data!
-                                              .map((e) => Container(
-                                                  padding:
-                                                      const EdgeInsets.only(
-                                                          left: 16),
-                                                  constraints:
-                                                      const BoxConstraints(
-                                                          maxWidth: 600),
-                                                  child: Column(
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .start,
-                                                      children: [
-                                                        Text(e.meta.title,
-                                                            style: const TextStyle(
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold)),
-                                                        Text(e
-                                                            .translations[
-                                                                p0.i - 1]
-                                                            .text
-                                                            .replaceAll(
-                                                                RegExp(
-                                                                    r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'),
-                                                                '')), //TODO: show footnotes
-                                                        const Divider()
-                                                      ])))
-                                              .toList());
-                                    }
-                                    return const CircularProgressIndicator();
-                                  },
-                                ))
-                          ]))),
-                  const Divider()
-                ]);
-              }).toList();
+            child: Column(children: [
+          ha
+              ? Column(children: [Text(
+                  t,
+                  textScaleFactor: size,
+                  style: arabic,
+                  textDirection: TextDirection.rtl,
+                  locale: const Locale('ar'),
+                ), const Divider()])
+              : Container(),
+          FutureBuilder(
+            future: _data,
+            builder: (ctx, snapshot) {
+              if (snapshot.hasData) {
+                List<Widget> s = Quran.fromJson(
+                        jsonDecode(snapshot.data.toString()))
+                    .val
+                    .where((element) =>
+                        int.parse(element.id.split(":")[0]) - 1 == widget.ind)
+                    .map((p0) {
+                  final int key = int.parse(p0.id.split(":")[1]) - 1;
+                  var li = GlobalKey();
+                  list.add(li);
+                  return Column(key: li, children: [
+                    VisibilityDetector(
+                        key: Key(key.toString()),
+                        onVisibilityChanged: (VisibilityInfo v) {
+                          var vi = v.visibleFraction * 100;
+                          int key =
+                              int.parse((v.key as ValueKey<String>).value);
+                          if (vi > 40) {
+                            if (!ss.contains(key)) ss.add(key);
+                          } else {
+                            ss.remove(key);
+                          }
+                          if (ss.isNotEmpty && aus) update(ss.reduce(min));
+                        },
+                        child: Container(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(children: [
+                              ListTile(
+                                  leading: Text((key + 1).toString()),
+                                  title: Text(
+                                    p0.text + " " + nu((key + 1).toString()),
+                                    textScaleFactor: size,
+                                    style: arabic,
+                                    textDirection: TextDirection.rtl,
+                                    locale: const Locale('ar'),
+                                  )),
+                              Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder<List<Translation>>(
+                                    future: _trans,
+                                    builder: (_, snapshot) {
+                                      if (snapshot.hasData) {
+                                        WidgetsBinding.instance!
+                                            .addPostFrameCallback(
+                                                (_) => scroll());
+                                        return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: snapshot.data!
+                                                .map((e) => Container(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                            left: 16),
+                                                    constraints:
+                                                        const BoxConstraints(
+                                                            maxWidth: 600),
+                                                    child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(e.meta.title,
+                                                              style: const TextStyle(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .bold)),
+                                                          Text(e
+                                                              .translations[
+                                                                  p0.i - 1]
+                                                              .text
+                                                              .replaceAll(
+                                                                  RegExp(
+                                                                      r'\<sup foot\_note\=\"?\d*\"?\>\d*\<\/sup\>'),
+                                                                  '')), //TODO: show footnotes
+                                                          const Divider()
+                                                        ])))
+                                                .toList());
+                                      }
+                                      return const CircularProgressIndicator();
+                                    },
+                                  ))
+                            ]))),
+                    const Divider()
+                  ]);
+                }).toList();
 
-              return ListView(children: s, shrinkWrap: true);
-            }
+                return ListView(children: s, shrinkWrap: true);
+              }
 
-            return const Center(child: CircularProgressIndicator());
-          },
-        )));
+              return const Center(child: CircularProgressIndicator());
+            },
+          )
+        ])));
   }
 
   Future<void> scroll() async {
