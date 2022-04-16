@@ -18,5 +18,14 @@
   "posSaved": "Posisi tersimpan.",
   "textSize": "Ukuran Teks",
   "ok": "OK",
-  "language": "Bahasa"
+  "language": "Bahasa",
+  "translationDesc": "{lang} — oleh {s}",
+  "@translationDesc": {
+    "description": "Translation description",
+    "type": "text",
+    "placeholders": {
+      "lang": {},
+      "s": {}
+    }
+  }
 }

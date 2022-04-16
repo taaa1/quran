@@ -37,7 +37,8 @@ class _Tp extends State<TranslationsPage> {
 
     return Directory('${directory.path}/quran/translations/')
         .listSync()
-        .map((e) => TranslationList.fromMeta(jsonDecode(File(e.path).readAsStringSync())))
+        .map((e) => TranslationList.fromMeta(
+            jsonDecode(File(e.path).readAsStringSync())))
         .toList();
   }
 
@@ -181,15 +182,20 @@ class _TranslationWidget extends State<TranslationWidget> {
   @override
   Widget build(BuildContext context) {
     String s = widget.p0.language!;
-    s = s[0].toUpperCase()+s.substring(1);
+    s = s[0].toUpperCase() + s.substring(1);
     return Card(
         child: ListTile(
             leading: _isLoading
                 ? const CircularProgressIndicator()
                 : const Icon(Icons.download),
             title: Text(widget.p0.title, overflow: TextOverflow.ellipsis),
-            subtitle: Text(s+(widget.p0.description != s ? " — by "+widget.p0.description : ""),
-                overflow: TextOverflow.ellipsis, maxLines: 3),
+            subtitle: Text(
+                (widget.p0.description != s
+                    ? AppLocalizations.of(context)!
+                        .translationDesc(s, widget.p0.description)
+                    : s),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 3),
             onTap: () {
               setState(() => _isLoading = true);
               download(widget.p0.key)
@@ -206,7 +212,10 @@ class TranslationList {
   final String? language;
 
   const TranslationList(
-      {required this.key, required this.title, required this.description, this.language});
+      {required this.key,
+      required this.title,
+      required this.description,
+      this.language});
 
   factory TranslationList.fromJson(Map<String, dynamic> json) {
     return TranslationList(
@@ -242,7 +251,10 @@ class Translation {
   final TranslationList meta;
   const Translation({required this.translations, required this.meta});
   factory Translation.fromJson(Map<String, dynamic> json) {
-    return Translation(translations: json['translations'].map<Tr>((v) => Tr.fromJson(v)).toList(), meta: TranslationList.fromMeta(json));
+    return Translation(
+        translations:
+            json['translations'].map<Tr>((v) => Tr.fromJson(v)).toList(),
+        meta: TranslationList.fromMeta(json));
   }
 }
 

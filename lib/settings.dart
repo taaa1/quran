@@ -54,6 +54,8 @@ class SettingsPage extends State<Stg> {
 
   @override
   Widget build(BuildContext context) {
+    final s = lang.entries.toList();
+    s.sort((a, b) => a.value.compareTo(b.value));
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
       body: SingleChildScrollView(
@@ -101,17 +103,15 @@ class SettingsPage extends State<Stg> {
                 context: context,
                 builder: (ctx) => SimpleDialog(
                       title: Text(AppLocalizations.of(context)!.language),
-                      children: AppLocalizations.supportedLocales
+                      children: s
                           .map((v) => SimpleDialogOption(
-                              child: Text(lang[intl.Intl.canonicalizedLocale(
-                                      v.toLanguageTag())] ??
-                                  ""),
+                              child: Text(
+                                  lang[intl.Intl.canonicalizedLocale(v.key)] ??
+                                      ""),
                               onPressed: () {
                                 StreamingSharedPreferences.instance.then(
-                                    (val) => val.setString(
-                                        "lang",
-                                        intl.Intl.canonicalizedLocale(
-                                            v.toLanguageTag())));
+                                    (val) => val.setString("lang",
+                                        intl.Intl.canonicalizedLocale(v.key)));
                                 Navigator.pop(context);
                               }))
                           .toList(),

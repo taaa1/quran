@@ -18,5 +18,14 @@
   "posSaved": "Position saved.",
   "textSize": "Text Size",
   "ok": "OK",
-  "language": "Language"
+  "language": "Language",
+  "translationDesc": "{lang} — by {s}",
+  "@translationDesc": {
+    "description": "Translation description",
+    "type": "text",
+    "placeholders": {
+      "lang": {},
+      "s": {}
+    }
+  }
 }
