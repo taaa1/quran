@@ -183,7 +183,7 @@ class _TranslationWidget extends State<TranslationWidget> {
 }
 
 class Installed extends StatefulWidget {
-  const Installed({required this.e}) : super();
+  const Installed({Key? key, required this.e}) : super(key: key);
 
   final TranslationList e;
 

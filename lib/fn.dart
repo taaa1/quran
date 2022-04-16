@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:http/http.dart' as http;
-import 'd/quran.dart';
 
 class Footnotes extends StatefulWidget {
   const Footnotes({Key? key, required this.fn}) : super(key: key);

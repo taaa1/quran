@@ -229,7 +229,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        Text.rich(TextSpan(children: f)), //TODO: show footnotes
+                                                        Text.rich(TextSpan(children: f)),
                                                         const Divider()
                                                       ]));
                                             }).toList());
