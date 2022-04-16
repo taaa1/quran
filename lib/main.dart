@@ -217,7 +217,6 @@ class _ReadPageS extends State<ReadPage> {
   List<int> ss = [];
   List list = [];
   String? title;
-  Trl? cache;
   bool aus = true;
   double size = 2;
 
@@ -229,24 +228,12 @@ class _ReadPageS extends State<ReadPage> {
     DefaultAssetBundle.of(context).loadString("assets/chapters.json").then(
         (v) => setState(() => title =
             Chapters.fromJson(jsonDecode(v)).chapters[widget.ind].latin));
-    loadTransCache().then((v) => setState(() => cache = v));
     StreamingSharedPreferences.instance.then((v) => {
-      setState(() {
-        aus = v.getBool("pos", defaultValue: true).getValue();
-        size = v.getDouble("asize", defaultValue: 2).getValue();
-      })
-    });
-  }
-
-  Future<Trl?> loadTransCache() async {
-    final directory = await getApplicationDocumentsDirectory();
-    try {
-      var s = await File("${directory.path}/quran/translation_cache.json")
-          .readAsString();
-      return Trl.fromJson(jsonDecode(s));
-    } catch (e) {
-      return null;
-    }
+          setState(() {
+            aus = v.getBool("pos", defaultValue: true).getValue();
+            size = v.getDouble("asize", defaultValue: 2).getValue();
+          })
+        });
   }
 
   Future<List<Translation>> loadTrans() async {
@@ -538,33 +525,31 @@ class _SizeDialog extends State<SizeDialog> {
         child: Container(
             width: 400,
             padding: const EdgeInsets.all(12),
-            child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(AppLocalizations.of(context)!.textSize,
-                      textAlign: TextAlign.start,
-                      style: Theme.of(context).textTheme.headline6),
-                  Text(
-                    t,
-                    textScaleFactor: s,
-                    style: arabic,
-                    textDirection: TextDirection.rtl,
-                    locale: const Locale('ar'),
-                  ),
-                  Slider(
-                      value: s,
-                      onChanged: (v) => setState(() => s = v),
-                      min: 1,
-                      max: 3,
-                      divisions: 10,
-                      autofocus: true,
-                      label: s.toString()),
-                  Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                          onPressed: () => Navigator.pop(context, s),
-                          child: Text(AppLocalizations.of(context)!.ok)))
-                ])));
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(AppLocalizations.of(context)!.textSize,
+                  textAlign: TextAlign.start,
+                  style: Theme.of(context).textTheme.headline6),
+              Text(
+                t,
+                textScaleFactor: s,
+                style: arabic,
+                textDirection: TextDirection.rtl,
+                locale: const Locale('ar'),
+              ),
+              Slider(
+                  value: s,
+                  onChanged: (v) => setState(() => s = v),
+                  min: 1,
+                  max: 3,
+                  divisions: 10,
+                  autofocus: true,
+                  label: s.toString()),
+              Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                      onPressed: () => Navigator.pop(context, s),
+                      child: Text(AppLocalizations.of(context)!.ok)))
+            ])));
   }
 }
 
