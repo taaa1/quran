@@ -64,14 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Center(
                     child: Column(
                   children: <Widget>[
-                    Text(
-                      AppLocalizations.of(context)!.head,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
                     s(),
                     const Divider(),
-                    Text(AppLocalizations.of(context)!.head2,
-                        style: Theme.of(context).textTheme.headlineSmall),
                     FutureBuilder<String>(
                       future: _lss,
                       builder: (context, snapshot) {
@@ -90,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   ind: p0.id - 1))),
                                       leading: Text(p0.id.toString()),
                                       title: Text(ar ? p0.arabic : p0.latin,
-                                          style: ar ? arabic : null,
+                                          style: ar ? arabic.copyWith(fontWeight: FontWeight.bold) : const TextStyle(fontWeight: FontWeight.bold),
                                           textScaleFactor: ar ? 1.5 : null,
                                           locale: ar
                                               ? const Locale('ar')
@@ -119,7 +113,6 @@ class _MyHomePageState extends State<MyHomePage> {
         if (data.isNotEmpty) {
           debugPrint(data.toString());
           return Column(children: [
-            const Divider(),
             Text(AppLocalizations.of(context)!.head3,
                 style: Theme.of(context).textTheme.headlineSmall),
             ResponsiveGridList(
