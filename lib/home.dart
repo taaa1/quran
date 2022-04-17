@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Qur'an"),
+          title: Text(AppLocalizations.of(context)!.quran),
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
