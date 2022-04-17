@@ -41,6 +41,7 @@ class _ReadPageS extends State<ReadPage> {
   bool ha = true;
   List<String> dis = [];
   String next = "";
+  String prev = "";
 
   @override
   void initState() {
@@ -62,11 +63,17 @@ class _ReadPageS extends State<ReadPage> {
     DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) {
       final s = Chapters.fromJson(jsonDecode(v)).chapters;
       final k = s[widget.ind];
-      final n = s[widget.ind + 1];
       setState(() {
         title = ar ? k.arabic : k.latin;
         ha = k.pre;
-        next = ar ? n.arabic : n.latin;
+        if(widget.ind < 113) {
+          final n = s[widget.ind + 1];
+          next = ar ? n.arabic : n.latin;
+        }
+        if(widget.ind > 0) {
+          final p = s[widget.ind - 1];
+          prev = ar ? p.arabic : p.latin;
+        }
       });
     });
   }
@@ -265,29 +272,46 @@ class _ReadPageS extends State<ReadPage> {
                   ]);
                 }).toList();
 
-                if (widget.ind < 113) {
-                  s = [
-                    ...s,
-                    ListTile(
-                        title: Text(AppLocalizations.of(context)!.next,
-                            textAlign: TextAlign.end),
-                        trailing: const Icon(Icons.arrow_forward),
-                        subtitle: Text(next,
-                            textAlign: TextAlign.end,
-                            style: ar ? arabic : null,
-                            locale: ar ? const Locale('ar') : null,
-                            textScaleFactor: ar ? 1.2 : null),
-                        onTap: () {
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (ctx) => ReadPage(
-                                      surat: next, ind: widget.ind + 1)));
-                        })
-                  ];
+                List<Widget> k = [];
+
+                if (widget.ind > 0) {
+                  k.add(Flexible(child: ListTile(
+                      title: Text(AppLocalizations.of(context)!.prev),
+                      leading: const Icon(Icons.arrow_back),
+                      subtitle: Text(prev,
+                          style: ar ? arabic : null,
+                          locale: ar ? const Locale('ar') : null,
+                          textScaleFactor: ar ? 1.2 : null),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (ctx) => ReadPage(
+                                    surat: prev, ind: widget.ind - 1)));
+                      })));
                 }
 
-                return ListView(children: s, shrinkWrap: true);
+                if (widget.ind < 113) {
+                  k.add(Flexible(child: ListTile(
+                      title: Text(AppLocalizations.of(context)!.next,
+                          textAlign: TextAlign.end),
+                      trailing: const Icon(Icons.arrow_forward),
+                      subtitle: Text(next,
+                          textAlign: TextAlign.end,
+                          style: ar ? arabic : null,
+                          locale: ar ? const Locale('ar') : null,
+                          textScaleFactor: ar ? 1.2 : null),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (ctx) => ReadPage(
+                                    surat: next, ind: widget.ind + 1)));
+                      })));
+                }
+
+                return ListView(
+                    children: [...s, Row(children: k)], shrinkWrap: true);
               }
 
               return const Center(child: CircularProgressIndicator());

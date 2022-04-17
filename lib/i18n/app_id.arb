@@ -27,5 +27,6 @@
     }
   },
   "footnoteErr": "Tidak dapat memuat catatan kaki. Pastikan Anda terhubung ke Internet.",
-  "next": "Selanjutnya"
+  "next": "Selanjutnya",
+  "prev": "Sebelumnya"
 }

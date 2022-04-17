@@ -27,5 +27,6 @@
     }
   },
   "footnoteErr": "Cannot load footnote. Make sure you are connected to the Internet.",
-  "next": "Next"
+  "next": "Next",
+  "prev": "Previous"
 }
