@@ -23,7 +23,7 @@ class Fn extends State<Footnotes> {
 
     http
         .get(Uri.parse(
-            "https://api.qurancdn.com/api/qdc/foot_notes/${widget.fn}"))
+            "https://api.quran.com/api/v4/foot_notes/${widget.fn}"))
         .then((v) {
       if (v.statusCode == 200) {
         setState(() => open = v.body);

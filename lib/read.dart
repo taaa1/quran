@@ -40,6 +40,7 @@ class _ReadPageS extends State<ReadPage> {
   bool ar = false;
   bool ha = true;
   List<String> dis = [];
+  String next = "";
 
   @override
   void initState() {
@@ -59,10 +60,13 @@ class _ReadPageS extends State<ReadPage> {
 
   void updateTitle() {
     DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) {
-      final s = Chapters.fromJson(jsonDecode(v)).chapters[widget.ind];
+      final s = Chapters.fromJson(jsonDecode(v)).chapters;
+      final k = s[widget.ind];
+      final n = s[widget.ind + 1];
       setState(() {
-        title = ar ? s.arabic : s.latin;
-        ha = s.pre;
+        title = ar ? k.arabic : k.latin;
+        ha = k.pre;
+        next = ar ? n.arabic : n.latin;
       });
     });
   }
@@ -197,20 +201,38 @@ class _ReadPageS extends State<ReadPage> {
                                             children: f.map((e) {
                                               List<InlineSpan> f = [];
 
-                                              final t = e
-                                                      .translations[p0.i - 1]
-                                                      .text;
+                                              final t =
+                                                  e.translations[p0.i - 1].text;
 
                                               int last = 0;
 
                                               RegExp(r'\<sup foot\_note\=\"?(\d*)\"?\>(\d*)\<\/sup\>')
-                                                  .allMatches(t).forEach((element) {
-                                                        f.add(TextSpan(text: t.substring(last, element.start)));
-                                                        f.add(TextSpan(text: element.group(2)!, style: const TextStyle(fontFeatures: [FontFeature.superscripts()], color: Colors.green), recognizer: TapGestureRecognizer()..onTap = () => showDialog(builder: (ctx) => Footnotes(fn: element.group(1)!), context: context)));
-                                                        last = element.end;
-                                                      });
+                                                  .allMatches(t)
+                                                  .forEach((element) {
+                                                f.add(TextSpan(
+                                                    text: t.substring(
+                                                        last, element.start)));
+                                                f.add(TextSpan(
+                                                    text: element.group(2)!,
+                                                    style: const TextStyle(
+                                                        fontFeatures: [
+                                                          FontFeature
+                                                              .superscripts()
+                                                        ],
+                                                        color: Colors.green),
+                                                    recognizer: TapGestureRecognizer()
+                                                      ..onTap = () => showDialog(
+                                                          builder: (ctx) =>
+                                                              Footnotes(
+                                                                  fn: element
+                                                                      .group(
+                                                                          1)!),
+                                                          context: context)));
+                                                last = element.end;
+                                              });
 
-                                              f.add(TextSpan(text: t.substring(last)));
+                                              f.add(TextSpan(
+                                                  text: t.substring(last)));
 
                                               return Container(
                                                   padding:
@@ -229,7 +251,8 @@ class _ReadPageS extends State<ReadPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        Text.rich(TextSpan(children: f)),
+                                                        Text.rich(TextSpan(
+                                                            children: f)),
                                                         const Divider()
                                                       ]));
                                             }).toList());
@@ -241,6 +264,28 @@ class _ReadPageS extends State<ReadPage> {
                     const Divider()
                   ]);
                 }).toList();
+
+                if (widget.ind < 113) {
+                  s = [
+                    ...s,
+                    ListTile(
+                        title: Text(AppLocalizations.of(context)!.next,
+                            textAlign: TextAlign.end),
+                        trailing: const Icon(Icons.arrow_forward),
+                        subtitle: Text(next,
+                            textAlign: TextAlign.end,
+                            style: ar ? arabic : null,
+                            locale: ar ? const Locale('ar') : null,
+                            textScaleFactor: ar ? 1.2 : null),
+                        onTap: () {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (ctx) => ReadPage(
+                                      surat: next, ind: widget.ind + 1)));
+                        })
+                  ];
+                }
 
                 return ListView(children: s, shrinkWrap: true);
               }
