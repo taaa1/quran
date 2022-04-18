@@ -11,11 +11,17 @@ class Info extends StatelessWidget {
         body: SingleChildScrollView(
             padding: const EdgeInsets.all(12),
             child: Center(
-                child: Column(children: [
-              const Image(
-                  image: AssetImage("icon.png"), width: 140, height: 140),
-              Text(AppLocalizations.of(context)!.quran, style: Theme.of(context).textTheme.headlineMedium),
-              Text(AppLocalizations.of(context)!.about2)
-            ]))));
+                child: Wrap(
+                    spacing: 20,
+                    alignment: WrapAlignment.center,
+                    children: [
+                  const Image(
+                      image: AssetImage("icon.png"), width: 140, height: 140),
+                  Column(children: [
+                    Text(AppLocalizations.of(context)!.quran,
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(AppLocalizations.of(context)!.about2),
+                  ])
+                ]))));
   }
 }
