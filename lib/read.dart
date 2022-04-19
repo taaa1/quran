@@ -30,8 +30,6 @@ class ReadPage extends StatefulWidget {
 }
 
 class _ReadPageS extends State<ReadPage> {
-  late Future<String> _data;
-  late Future<List<Translation>> _trans;
   List<int> ss = [];
   List list = [];
   String? title;
@@ -46,8 +44,6 @@ class _ReadPageS extends State<ReadPage> {
   @override
   void initState() {
     super.initState();
-    _data = DefaultAssetBundle.of(context).loadString("assets/quran.json");
-    _trans = loadTrans();
     StreamingSharedPreferences.instance.then((v) {
       setState(() {
         aus = v.getBool("pos", defaultValue: true).getValue();
@@ -150,7 +146,7 @@ class _ReadPageS extends State<ReadPage> {
                 ])
               : Container(),
           FutureBuilder(
-            future: _data,
+            future: DefaultAssetBundle.of(context).loadString("assets/quran.json"),
             builder: (ctx, snapshot) {
               if (snapshot.hasData) {
                 List<Widget> s = Quran.fromJson(
@@ -191,7 +187,7 @@ class _ReadPageS extends State<ReadPage> {
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: FutureBuilder<List<Translation>>(
-                                    future: _trans,
+                                    future: loadTrans(),
                                     builder: (_, snapshot) {
                                       if (snapshot.hasData) {
                                         WidgetsBinding.instance!

@@ -18,19 +18,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late Future<String> _lss;
-  List<String>? _last;
   bool ar = false;
 
   @override
   void initState() {
     super.initState();
-    _lss = DefaultAssetBundle.of(context).loadString("assets/chapters.json");
     StreamingSharedPreferences.instance.then((value) {
-      final s = value.getStringList("last", defaultValue: []);
-      setState(() => _last = s.getValue());
-      s.listen((value) => setState(() => _last = value));
-
       final d = value.getBool("ar", defaultValue: false);
       setState(() => ar = d.getValue());
       d.listen((value) => setState(() => ar = value));
@@ -67,7 +60,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     s(),
                     const Divider(),
                     FutureBuilder<String>(
-                      future: _lss,
+                      future: DefaultAssetBundle.of(context)
+                          .loadString("assets/chapters.json"),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           Chapters js =
@@ -84,7 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   ind: p0.id - 1))),
                                       leading: Text(p0.id.toString()),
                                       title: Text(ar ? p0.arabic : p0.latin,
-                                          style: ar ? arabic.copyWith(fontWeight: FontWeight.bold) : const TextStyle(fontWeight: FontWeight.bold),
+                                          style: ar
+                                              ? arabic.copyWith(
+                                                  fontWeight: FontWeight.bold)
+                                              : const TextStyle(
+                                                  fontWeight: FontWeight.bold),
                                           textScaleFactor: ar ? 1.5 : null,
                                           locale: ar
                                               ? const Locale('ar')
@@ -107,41 +105,52 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget s() {
-    if (_last != null) {
-      List<String>? data = _last;
-      if (data != null) {
-        if (data.isNotEmpty) {
-          debugPrint(data.toString());
-          return Column(children: [
-            Text(AppLocalizations.of(context)!.head3,
-                style: Theme.of(context).textTheme.headlineSmall),
-            ResponsiveGridList(
-                children: data.map((e) {
-                  var s = e.split(":");
-                  s = s
-                      .map((value) => (int.parse(value) + 1).toString())
-                      .toList();
-                  return Card(
-                      child: ListTile(
-                          title: Text(s.join(":")),
-                          onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ReadPage(
-                                      surat: s[0],
-                                      ind: int.parse(s[0]) - 1,
-                                      scrollTo: int.parse(s[1]))))));
-                }).toList(),
-                minItemWidth: 300,
-                maxItemsPerRow: 3,
-                shrinkWrap: true,
-                horizontalGridMargin: 50,
-                verticalGridMargin: 20)
-          ]);
-        }
-      }
-    }
+    return FutureBuilder<StreamingSharedPreferences>(
+        future: StreamingSharedPreferences.instance,
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return StreamBuilder<List<String>>(
+                stream: snapshot.data!.getStringList("last", defaultValue: []),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final data = snapshot.data!;
+                    if (data.isNotEmpty) {
+                      debugPrint(data.toString());
+                      return Column(children: [
+                        Text(AppLocalizations.of(context)!.head3,
+                            style: Theme.of(context).textTheme.headlineSmall),
+                        ResponsiveGridList(
+                            children: data.map((e) {
+                              var s = e.split(":");
+                              s = s
+                                  .map((value) =>
+                                      (int.parse(value) + 1).toString())
+                                  .toList();
+                              return Card(
+                                  child: ListTile(
+                                      title: Text(s.join(":")),
+                                      onTap: () => Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => ReadPage(
+                                                  surat: s[0],
+                                                  ind: int.parse(s[0]) - 1,
+                                                  scrollTo:
+                                                      int.parse(s[1]))))));
+                            }).toList(),
+                            minItemWidth: 300,
+                            maxItemsPerRow: 3,
+                            shrinkWrap: true,
+                            horizontalGridMargin: 50,
+                            verticalGridMargin: 20)
+                      ]);
+                    }
+                  }
 
-    return Container();
+                  return Container();
+                });
+          }
+          return const CircularProgressIndicator();
+        });
   }
 }
