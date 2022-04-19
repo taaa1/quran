@@ -149,12 +149,14 @@ class _ReadPageS extends State<ReadPage> {
             future: DefaultAssetBundle.of(context).loadString("assets/quran.json"),
             builder: (ctx, snapshot) {
               if (snapshot.hasData) {
-                List<Widget> s = Quran.fromJson(
+                final s = Quran.fromJson(
                         jsonDecode(snapshot.data.toString()))
                     .val
                     .where((element) =>
-                        int.parse(element.id.split(":")[0]) - 1 == widget.ind)
-                    .map((p0) {
+                        int.parse(element.id.split(":")[0]) - 1 == widget.ind);
+                    
+                final l = ListView.builder(shrinkWrap: true, itemCount: s.length, itemBuilder: (context, i) {
+                  final p0 = s.elementAt(i);
                   final int key = int.parse(p0.id.split(":")[1]) - 1;
                   var li = GlobalKey();
                   list.add(li);
@@ -266,7 +268,7 @@ class _ReadPageS extends State<ReadPage> {
                             ]))),
                     const Divider()
                   ]);
-                }).toList();
+                });
 
                 List<Widget> k = [];
 
@@ -306,8 +308,7 @@ class _ReadPageS extends State<ReadPage> {
                       })));
                 }
 
-                return ListView(
-                    children: [...s, Row(children: k)], shrinkWrap: true);
+                return Column(children: [l, Row(children: k)]);
               }
 
               return const Center(child: CircularProgressIndicator());
