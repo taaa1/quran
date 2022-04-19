@@ -9,7 +9,13 @@
   "installed": "Installed",
   "available": "Available",
   "footnote": "Footnote",
-  "about2": "Qur'an data & translations from quran.com",
+  "about2": "Qur'an data & translations from Quran.com\n\nVersion {version}\n\nBuilt with Flutter",
+  "@about2": {
+    "type": "text",
+    "placeholders": {
+      "version": {}
+    }
+  },
   "darkMode": "Dark Mode",
   "arabicName": "Use Arabic Text for Sura Names",
   "autosavePos": "Auto-Save Position",

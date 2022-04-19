@@ -9,7 +9,13 @@
   "installed": "Terpasang",
   "available": "Tersedia",
   "footnote": "Catatan Kaki",
-  "about2": "Data Qur'an & terjemahan dari quran.com",
+  "about2": "Data Qur'an & terjemahan dari Quran.com\n\nVersi {version} \n\nDibuat dengan Flutter",
+  "@about2": {
+    "type": "text",
+    "placeholders": {
+      "version": {}
+    }
+  },
   "darkMode": "Mode Gelap",
   "arabicName": "Gunakan Teks Arab untuk Nama Surat",
   "autosavePos": "Simpan Posisi secara Otomatis",

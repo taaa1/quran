@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Info extends StatelessWidget {
   const Info({Key? key}) : super(key: key);
@@ -20,7 +21,13 @@ class Info extends StatelessWidget {
                   Column(children: [
                     Text(AppLocalizations.of(context)!.quran,
                         style: Theme.of(context).textTheme.headlineMedium),
-                    Text(AppLocalizations.of(context)!.about2),
+                    FutureBuilder<PackageInfo>(builder: (context, snapshot) {
+                      if(snapshot.hasData) {
+                        return Text(AppLocalizations.of(context)!.about2(snapshot.data!.version));
+                      }
+
+                      return const CircularProgressIndicator();
+                    }, future: PackageInfo.fromPlatform())
                   ])
                 ]))));
   }
