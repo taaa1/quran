@@ -53,7 +53,9 @@ class _ReadPageS extends State<ReadPage> {
       });
       updateTitle();
     });
-    ipl.itemPositions.addListener(up);
+    ipl.itemPositions.addListener(() {
+      if(aus) up();
+    });
   }
 
   void up() {

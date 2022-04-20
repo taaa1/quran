@@ -57,70 +57,96 @@ class SettingsPage extends State<Stg> {
     final s = lang.entries.toList();
     s.sort((a, b) => a.value.compareTo(b.value));
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
-      body: SingleChildScrollView(
-          child: ListView(
-        shrinkWrap: true,
-        children: [
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.translation),
-            leading: const Icon(Icons.translate),
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const TranslationsPage()));
-            },
-          ),
-          SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.darkMode),
-              secondary: const Icon(Icons.dark_mode),
-              value: dm,
-              onChanged: (s) => update(s, "dark")),
-          SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.arabicName),
-              secondary: const Icon(Icons.list),
-              onChanged: (b) => update(b, "ar"),
-              value: ar),
-          SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.autosavePos),
-              secondary: const Icon(Icons.bookmark),
-              value: pos,
-              onChanged: (b) => update(b, "pos")),
-          ListTile(
-              title: Text(AppLocalizations.of(context)!.textSize),
-              leading: const Icon(Icons.format_size),
-              subtitle: Text(size.toString()),
-              onTap: () => showDialog<double>(
-                      context: context, builder: (ctx) => SizeDialog(s: size))
-                  .then(
-                      (value) => StreamingSharedPreferences.instance.then((v) {
-                            v.setDouble("asize", value!);
-                          }))),
-          ListTile(
-            title: Text(AppLocalizations.of(context)!.language),
-            leading: const Icon(Icons.language),
-            onTap: () => showDialog(
-                context: context,
-                builder: (ctx) => SimpleDialog(
-                      title: Text(AppLocalizations.of(context)!.language),
-                      children: s
-                          .map((v) => SimpleDialogOption(
-                              child: Text(
-                                  lang[intl.Intl.canonicalizedLocale(v.key)] ??
-                                      ""),
-                              onPressed: () {
-                                StreamingSharedPreferences.instance.then(
-                                    (val) => val.setString("lang",
-                                        intl.Intl.canonicalizedLocale(v.key)));
-                                Navigator.pop(context);
-                              }))
-                          .toList(),
-                    )),
-          )
-        ],
-      )),
-    );
+        appBar: AppBar(title: Text(AppLocalizations.of(context)!.settings)),
+        body: SingleChildScrollView(
+            child: FutureBuilder<StreamingSharedPreferences>(
+                future: StreamingSharedPreferences.instance,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final pref = snapshot.data!;
+
+                    return ListView(
+                      shrinkWrap: true,
+                      children: [
+                        ListTile(
+                          title:
+                              Text(AppLocalizations.of(context)!.translation),
+                          leading: const Icon(Icons.translate),
+                          onTap: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const TranslationsPage()));
+                          },
+                        ),
+                        PreferenceBuilder<bool>(
+                            preference:
+                                pref.getBool("dark", defaultValue: false),
+                            builder: (context, d) => SwitchListTile(
+                                title: Text(
+                                    AppLocalizations.of(context)!.darkMode),
+                                secondary: const Icon(Icons.dark_mode),
+                                value: d,
+                                onChanged: (s) => pref.setBool("dark", s))),
+                        PreferenceBuilder<bool>(
+                            preference: pref.getBool("ar", defaultValue: false),
+                            builder: (context, d) => SwitchListTile(
+                                title: Text(
+                                    AppLocalizations.of(context)!.arabicName),
+                                secondary: const Icon(Icons.list),
+                                onChanged: (b) => pref.setBool("ar", b),
+                                value: d)),
+                        PreferenceBuilder<bool>(
+                            preference: pref.getBool("pos", defaultValue: true),
+                            builder: (context, d) => SwitchListTile(
+                                title: Text(
+                                    AppLocalizations.of(context)!.autosavePos),
+                                secondary: const Icon(Icons.bookmark),
+                                value: d,
+                                onChanged: (b) => pref.setBool("pos", b))),
+                        ListTile(
+                            title: Text(AppLocalizations.of(context)!.textSize),
+                            leading: const Icon(Icons.format_size),
+                            subtitle: Text(size.toString()),
+                            onTap: () => showDialog<double>(
+                                context: context,
+                                builder: (ctx) =>
+                                    SizeDialog(s: size)).then(
+                                (value) => pref.setDouble("asize", value!))),
+                        ListTile(
+                          title: Text(AppLocalizations.of(context)!.language),
+                          leading: const Icon(Icons.language),
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (ctx) => SimpleDialog(
+                                    title: Text(
+                                        AppLocalizations.of(context)!.language),
+                                    children: s
+                                        .map((v) => SimpleDialogOption(
+                                            child: Text(lang[intl.Intl
+                                                    .canonicalizedLocale(
+                                                        v.key)] ??
+                                                ""),
+                                            onPressed: () {
+                                              StreamingSharedPreferences
+                                                  .instance
+                                                  .then((val) => val.setString(
+                                                      "lang",
+                                                      intl.Intl
+                                                          .canonicalizedLocale(
+                                                              v.key)));
+                                              Navigator.pop(context);
+                                            }))
+                                        .toList(),
+                                  )),
+                        )
+                      ],
+                    );
+                  }
+
+                  return const Center(child: CircularProgressIndicator());
+                })));
   }
 
   void update(bool b, String c) {
