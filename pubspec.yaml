@@ -39,6 +39,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   package_info_plus: ^1.4.2
+  scrollable_positioned_list: ^0.2.3
 
 dev_dependencies:
   flutter_test:
