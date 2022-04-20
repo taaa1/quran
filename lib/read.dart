@@ -223,11 +223,9 @@ class _ReadPageS extends State<ReadPage> {
                                                         color: Colors.green),
                                                     recognizer: TapGestureRecognizer()
                                                       ..onTap = () => showDialog(
-                                                          builder: (ctx) =>
-                                                              Footnotes(
-                                                                  fn: element
-                                                                      .group(
-                                                                          1)!),
+                                                          builder: (ctx) => Fn(
+                                                              fn: element
+                                                                  .group(1)!),
                                                           context: context)));
                                                 last = element.end;
                                               });
