@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/gestures.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'd/quran.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 import 'package:streaming_shared_preferences/streaming_shared_preferences.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'translations.dart';
@@ -31,8 +29,6 @@ class ReadPage extends StatefulWidget {
 }
 
 class _ReadPageS extends State<ReadPage> {
-  List<int> ss = [];
-  List list = [];
   String? title;
   bool aus = true;
   double size = 2;
@@ -57,6 +53,16 @@ class _ReadPageS extends State<ReadPage> {
       });
       updateTitle();
     });
+    ipl.itemPositions.addListener(up);
+  }
+
+  void up() {
+    final m = ipl.itemPositions.value;
+    debugPrint(m.map((e) => e.itemTrailingEdge * 100).toString());
+    update(m
+        .where((element) => (element.itemTrailingEdge * 100) > 15)
+        .elementAt(0)
+        .index);
   }
 
   void updateTitle() {
@@ -111,9 +117,6 @@ class _ReadPageS extends State<ReadPage> {
   @override
   void dispose() {
     super.dispose();
-    for (var element in list.toList().asMap().entries) {
-      VisibilityDetectorController.instance.forget(Key(element.key.toString()));
-    }
   }
 
   @override
@@ -122,7 +125,7 @@ class _ReadPageS extends State<ReadPage> {
     if (!aus) {
       ac.add(IconButton(
           onPressed: () {
-            update(ss.reduce(min));
+            up();
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(AppLocalizations.of(context)!.posSaved)));
           },
@@ -170,115 +173,95 @@ class _ReadPageS extends State<ReadPage> {
                     itemBuilder: (context, i) {
                       final p0 = s.elementAt(i);
                       final int key = int.parse(p0.id.split(":")[1]) - 1;
-                      var li = GlobalKey();
-                      list.add(li);
-                      return Column(key: li, children: [
-                        VisibilityDetector(
-                            key: Key(key.toString()),
-                            onVisibilityChanged: (VisibilityInfo v) {
-                              var vi = v.visibleFraction * 100;
-                              int key =
-                                  int.parse((v.key as ValueKey<String>).value);
-                              if (vi > 40) {
-                                if (!ss.contains(key)) ss.add(key);
-                              } else {
-                                ss.remove(key);
-                              }
-                              if (ss.isNotEmpty && aus) update(ss.reduce(min));
-                            },
-                            child: Container(
-                                padding: const EdgeInsets.all(8),
-                                child: Column(children: [
-                                  ListTile(
-                                      leading: Text((key + 1).toString()),
-                                      title: Text(
-                                        p0.text +
-                                            " " +
-                                            nu((key + 1).toString()),
-                                        textScaleFactor: size,
-                                        style: arabic,
-                                        textDirection: TextDirection.rtl,
-                                        locale: const Locale('ar'),
-                                      )),
-                                  Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: FutureBuilder<List<Translation>>(
-                                        future: loadTrans(),
-                                        builder: (_, snapshot) {
-                                          if (snapshot.hasData) {
-                                            var f = snapshot.data!;
-                                            f.removeWhere((v) =>
-                                                dis.contains(v.meta.key));
+                      return Column(children: [
+                        Container(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(children: [
+                              ListTile(
+                                  leading: Text((key + 1).toString()),
+                                  title: Text(
+                                    p0.text + " " + nu((key + 1).toString()),
+                                    textScaleFactor: size,
+                                    style: arabic,
+                                    textDirection: TextDirection.rtl,
+                                    locale: const Locale('ar'),
+                                  )),
+                              Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: FutureBuilder<List<Translation>>(
+                                    future: loadTrans(),
+                                    builder: (_, snapshot) {
+                                      if (snapshot.hasData) {
+                                        var f = snapshot.data!;
+                                        f.removeWhere(
+                                            (v) => dis.contains(v.meta.key));
 
-                                            return Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: f.map((e) {
-                                                  List<InlineSpan> f = [];
+                                        return Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: f.map((e) {
+                                              List<InlineSpan> f = [];
 
-                                                  final t = e
-                                                      .translations[p0.i - 1]
-                                                      .text;
+                                              final t =
+                                                  e.translations[p0.i - 1].text;
 
-                                                  int last = 0;
+                                              int last = 0;
 
-                                                  RegExp(r'\<sup foot\_note\=\"?(\d*)\"?\>(\d*)\<\/sup\>')
-                                                      .allMatches(t)
-                                                      .forEach((element) {
-                                                    f.add(TextSpan(
-                                                        text: t.substring(last,
-                                                            element.start)));
-                                                    f.add(TextSpan(
-                                                        text: element.group(2)!,
-                                                        style: const TextStyle(
-                                                            fontFeatures: [
-                                                              FontFeature
-                                                                  .superscripts()
-                                                            ],
-                                                            color:
-                                                                Colors.green),
-                                                        recognizer: TapGestureRecognizer()
-                                                          ..onTap = () => showDialog(
-                                                              builder: (ctx) =>
-                                                                  Footnotes(
-                                                                      fn: element
-                                                                          .group(
-                                                                              1)!),
-                                                              context:
-                                                                  context)));
-                                                    last = element.end;
-                                                  });
+                                              RegExp(r'\<sup foot\_note\=\"?(\d*)\"?\>(\d*)\<\/sup\>')
+                                                  .allMatches(t)
+                                                  .forEach((element) {
+                                                f.add(TextSpan(
+                                                    text: t.substring(
+                                                        last, element.start)));
+                                                f.add(TextSpan(
+                                                    text: element.group(2)!,
+                                                    style: const TextStyle(
+                                                        fontFeatures: [
+                                                          FontFeature
+                                                              .superscripts()
+                                                        ],
+                                                        color: Colors.green),
+                                                    recognizer: TapGestureRecognizer()
+                                                      ..onTap = () => showDialog(
+                                                          builder: (ctx) =>
+                                                              Footnotes(
+                                                                  fn: element
+                                                                      .group(
+                                                                          1)!),
+                                                          context: context)));
+                                                last = element.end;
+                                              });
 
-                                                  f.add(TextSpan(
-                                                      text: t.substring(last)));
+                                              f.add(TextSpan(
+                                                  text: t.substring(last)));
 
-                                                  return Container(
-                                                      padding:
-                                                          const EdgeInsets.only(
-                                                              left: 16),
-                                                      constraints:
-                                                          const BoxConstraints(
-                                                              maxWidth: 600),
-                                                      child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(e.meta.title,
-                                                                style: const TextStyle(
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold)),
-                                                            Text.rich(TextSpan(
-                                                                children: f)),
-                                                            const Divider()
-                                                          ]));
-                                                }).toList());
-                                          }
-                                          return Container();
-                                        },
-                                      ))
-                                ]))),
+                                              return Container(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 16),
+                                                  constraints:
+                                                      const BoxConstraints(
+                                                          maxWidth: 600),
+                                                  child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Text(e.meta.title,
+                                                            style: const TextStyle(
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold)),
+                                                        Text.rich(TextSpan(
+                                                            children: f)),
+                                                        const Divider()
+                                                      ]));
+                                            }).toList());
+                                      }
+                                      return Container();
+                                    },
+                                  ))
+                            ])),
                         const Divider()
                       ]);
                     });
