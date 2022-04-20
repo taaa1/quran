@@ -16,9 +16,6 @@ class Stg extends StatefulWidget {
 }
 
 class SettingsPage extends State<Stg> {
-  bool dm = false;
-  bool ar = false;
-  bool pos = true;
   double size = 2;
   List<StreamSubscription> p = [];
 
@@ -26,18 +23,6 @@ class SettingsPage extends State<Stg> {
   void initState() {
     super.initState();
     StreamingSharedPreferences.instance.then((value) {
-      final s = value.getBool("dark", defaultValue: false);
-      setState(() => dm = s.getValue());
-      p.add(s.listen((value) => setState(() => dm = value)));
-
-      final d = value.getBool("ar", defaultValue: false);
-      setState(() => ar = d.getValue());
-      p.add(d.listen((value) => setState(() => ar = value)));
-
-      final o = value.getBool("pos", defaultValue: true);
-      setState(() => pos = o.getValue());
-      p.add(o.listen((value) => setState(() => pos = value)));
-
       final z = value.getDouble("asize", defaultValue: 2);
       setState(() => size = z.getValue());
       p.add(z.listen((value) => setState(() => size = value)));

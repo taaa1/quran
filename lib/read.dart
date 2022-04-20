@@ -186,7 +186,7 @@ class _ReadPageS extends State<ReadPage> {
                                     textScaleFactor: size,
                                     style: arabic,
                                     textDirection: TextDirection.rtl,
-                                    locale: const Locale('ar'),
+                                    locale: const Locale('ar')
                                   )),
                               Align(
                                   alignment: Alignment.centerLeft,
@@ -252,7 +252,7 @@ class _ReadPageS extends State<ReadPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        Text.rich(TextSpan(
+                                                        SelectableText.rich(TextSpan(
                                                             children: f)),
                                                         const Divider()
                                                       ]));

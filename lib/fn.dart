@@ -29,7 +29,7 @@ class Fn extends StatelessWidget {
                         return Text(AppLocalizations.of(context)!.footnoteErr);
                       }
 
-                      return Text(
+                      return SelectableText(
                           jsonDecode(snapshot.data!.body)['foot_note']['text']);
                     }
 
