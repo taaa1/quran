@@ -29,14 +29,11 @@ class ReadPage extends StatefulWidget {
 }
 
 class _ReadPageS extends State<ReadPage> {
-  String? title;
   bool aus = true;
   double size = 2;
   bool ar = false;
-  bool ha = true;
   List<String> dis = [];
-  String next = "";
-  String prev = "";
+  late Future<List<Chapter>> chap;
 
   final ItemScrollController its = ItemScrollController();
   final ItemPositionsListener ipl = ItemPositionsListener.create();
@@ -51,10 +48,14 @@ class _ReadPageS extends State<ReadPage> {
         ar = v.getBool("ar", defaultValue: false).getValue();
         dis = v.getStringList("disabledt", defaultValue: []).getValue();
       });
-      updateTitle();
     });
     ipl.itemPositions.addListener(() {
-      if(aus) up();
+      if (aus) up();
+    });
+    chap = Future(() async {
+      final m = await DefaultAssetBundle.of(context)
+          .loadString("assets/chapters.json");
+      return Chapters.fromJson(jsonDecode(m)).chapters;
     });
   }
 
@@ -65,25 +66,6 @@ class _ReadPageS extends State<ReadPage> {
         .where((element) => (element.itemTrailingEdge * 100) > 15)
         .elementAt(0)
         .index);
-  }
-
-  void updateTitle() {
-    DefaultAssetBundle.of(context).loadString("assets/chapters.json").then((v) {
-      final s = Chapters.fromJson(jsonDecode(v)).chapters;
-      final k = s[widget.ind];
-      setState(() {
-        title = ar ? k.arabic : k.latin;
-        ha = k.pre;
-        if (widget.ind < 113) {
-          final n = s[widget.ind + 1];
-          next = ar ? n.arabic : n.latin;
-        }
-        if (widget.ind > 0) {
-          final p = s[widget.ind - 1];
-          prev = ar ? p.arabic : p.latin;
-        }
-      });
-    });
   }
 
   Future<List<Translation>> loadTrans() async {
@@ -137,22 +119,40 @@ class _ReadPageS extends State<ReadPage> {
 
     return Scaffold(
         appBar: AppBar(
-            title: Text(title ?? widget.surat,
-                style: ar ? arabic : null, textScaleFactor: ar ? 1.5 : null),
+            title: FutureBuilder<List<Chapter>>(
+                future: chap,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final se = snapshot.data![widget.ind];
+                    return Text(ar ? se.arabic : se.latin,
+                        style: ar ? arabic : null,
+                        textScaleFactor: ar ? 1.5 : null);
+                  }
+
+                  return Container();
+                }),
             actions: ac),
         body: Column(children: [
-          ha
-              ? Column(children: [
-                  Text(
-                    t,
-                    textScaleFactor: size,
-                    style: arabic,
-                    textDirection: TextDirection.rtl,
-                    locale: const Locale('ar'),
-                  ),
-                  const Divider()
-                ])
-              : Container(),
+          FutureBuilder<List<Chapter>>(
+              future: chap,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  if (snapshot.data![widget.ind].pre) {
+                    return Column(children: [
+                      Text(
+                        t,
+                        textScaleFactor: size,
+                        style: arabic,
+                        textDirection: TextDirection.rtl,
+                        locale: const Locale('ar'),
+                      ),
+                      const Divider()
+                    ]);
+                  }
+                }
+
+                return Container();
+              }),
           FutureBuilder(
             future:
                 DefaultAssetBundle.of(context).loadString("assets/quran.json"),
@@ -182,12 +182,11 @@ class _ReadPageS extends State<ReadPage> {
                               ListTile(
                                   leading: Text((key + 1).toString()),
                                   title: Text(
-                                    p0.text + " " + nu((key + 1).toString()),
-                                    textScaleFactor: size,
-                                    style: arabic,
-                                    textDirection: TextDirection.rtl,
-                                    locale: const Locale('ar')
-                                  )),
+                                      p0.text + " " + nu((key + 1).toString()),
+                                      textScaleFactor: size,
+                                      style: arabic,
+                                      textDirection: TextDirection.rtl,
+                                      locale: const Locale('ar'))),
                               Align(
                                   alignment: Alignment.centerLeft,
                                   child: FutureBuilder<List<Translation>>(
@@ -252,8 +251,9 @@ class _ReadPageS extends State<ReadPage> {
                                                                 fontWeight:
                                                                     FontWeight
                                                                         .bold)),
-                                                        SelectableText.rich(TextSpan(
-                                                            children: f)),
+                                                        SelectableText.rich(
+                                                            TextSpan(
+                                                                children: f)),
                                                         const Divider()
                                                       ]));
                                             }).toList());
@@ -269,41 +269,67 @@ class _ReadPageS extends State<ReadPage> {
                 List<Widget> k = [];
 
                 if (widget.ind > 0) {
-                  k.add(Flexible(
-                      child: ListTile(
-                          title: Text(AppLocalizations.of(context)!.prev),
-                          leading: const Icon(Icons.arrow_back),
-                          subtitle: Text(prev,
-                              style: ar ? arabic : null,
-                              locale: ar ? const Locale('ar') : null,
-                              textScaleFactor: ar ? 1.2 : null),
-                          onTap: () {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (ctx) => ReadPage(
-                                        surat: prev, ind: widget.ind - 1)));
-                          })));
+                  k.add(FutureBuilder<List<Chapter>>(
+                      future: chap,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final pre = snapshot.data![widget.ind - 1];
+                          final prev = ar ? pre.arabic : pre.latin;
+
+                          return Flexible(
+                              child: ListTile(
+                                  title:
+                                      Text(AppLocalizations.of(context)!.prev),
+                                  leading: const Icon(Icons.arrow_back),
+                                  subtitle: Text(prev,
+                                      style: ar ? arabic : null,
+                                      locale: ar ? const Locale('ar') : null,
+                                      textScaleFactor: ar ? 1.2 : null),
+                                  onTap: () {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (ctx) => ReadPage(
+                                                surat: prev,
+                                                ind: widget.ind - 1)));
+                                  }));
+                        }
+
+                        return Container();
+                      }));
                 }
 
                 if (widget.ind < 113) {
-                  k.add(Flexible(
-                      child: ListTile(
-                          title: Text(AppLocalizations.of(context)!.next,
-                              textAlign: TextAlign.end),
-                          trailing: const Icon(Icons.arrow_forward),
-                          subtitle: Text(next,
-                              textAlign: TextAlign.end,
-                              style: ar ? arabic : null,
-                              locale: ar ? const Locale('ar') : null,
-                              textScaleFactor: ar ? 1.2 : null),
-                          onTap: () {
-                            Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (ctx) => ReadPage(
-                                        surat: next, ind: widget.ind + 1)));
-                          })));
+                  k.add(FutureBuilder<List<Chapter>>(
+                      future: chap,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final nex = snapshot.data![widget.ind + 1];
+                          final next = ar ? nex.arabic : nex.latin;
+
+                          return Flexible(
+                              child: ListTile(
+                                  title: Text(
+                                      AppLocalizations.of(context)!.next,
+                                      textAlign: TextAlign.end),
+                                  trailing: const Icon(Icons.arrow_forward),
+                                  subtitle: Text(next,
+                                      textAlign: TextAlign.end,
+                                      style: ar ? arabic : null,
+                                      locale: ar ? const Locale('ar') : null,
+                                      textScaleFactor: ar ? 1.2 : null),
+                                  onTap: () {
+                                    Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (ctx) => ReadPage(
+                                                surat: next,
+                                                ind: widget.ind + 1)));
+                                  }));
+                        }
+
+                        return Container();
+                      }));
                 }
 
                 return Flexible(
