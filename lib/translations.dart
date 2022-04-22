@@ -182,67 +182,61 @@ class _TranslationWidget extends State<TranslationWidget> {
   }
 }
 
-class Installed extends StatefulWidget {
+class Installed extends StatelessWidget {
   const Installed({Key? key, required this.e}) : super(key: key);
 
   final TranslationList e;
 
   @override
-  State<Installed> createState() => _Installed();
-}
-
-class _Installed extends State<Installed> {
-  List<String> s = [];
-  StreamSubscription? p;
-
-  @override
-  void initState() {
-    super.initState();
-    StreamingSharedPreferences.instance.then((v) {
-      final ls = v.getStringList("disabledt", defaultValue: []);
-      setState(() => s = ls.getValue());
-      p = ls.listen((value) => setState(() => s = value));
-    });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    p?.cancel();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Card(
-        key: Key(widget.e.key),
-        child: Column(children: [
-          ListTile(
-            title: Text(widget.e.title),
-            leading: const Icon(Icons.translate),
-            subtitle: Text(widget.e.description),
-          ),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Switch(value: !s.contains(widget.e.key), onChanged: tog),
-            ButtonBar(
-              alignment: MainAxisAlignment.end,
-              children: [
-                TextButton(
-                    onPressed: () => delete(widget.e.key),
-                    child: Text(AppLocalizations.of(context)!.delete))
-              ],
-            )
-          ])
-        ]));
+        key: Key(e.key),
+        child: FutureBuilder<StreamingSharedPreferences>(
+            future: StreamingSharedPreferences.instance,
+            builder: (context, fu) {
+              if (fu.hasData) {
+                return PreferenceBuilder<List<String>>(
+                    preference:
+                        fu.data!.getStringList("disabledt", defaultValue: []),
+                    builder: (context, snapshot) {
+                      return Column(children: [
+                        ListTile(
+                          title: Text(e.title),
+                          leading: const Icon(Icons.translate),
+                          subtitle: Text(e.description),
+                        ),
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Switch(
+                                  value: !snapshot.contains(e.key),
+                                  onChanged: (v) => fu.data!.setStringList(
+                                      "disabledt", tog(v, snapshot))),
+                              ButtonBar(
+                                alignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                      onPressed: () => delete(e.key),
+                                      child: Text(
+                                          AppLocalizations.of(context)!.delete))
+                                ],
+                              )
+                            ])
+                      ]);
+                    });
+              }
+
+              return const CircularProgressIndicator();
+            }));
   }
 
-  void tog(bool m) async {
+  List<String> tog(bool m, List<String> l) {
     if (m) {
-      s.remove(widget.e.key);
+      l.remove(e.key);
     } else {
-      if (!s.contains(widget.e.key)) s.add(widget.e.key);
+      if (!l.contains(e.key)) l.add(e.key);
     }
-    StreamingSharedPreferences.instance
-        .then((v) => v.setStringList("disabledt", s));
+    return l;
   }
 
   void delete(String key) async {
