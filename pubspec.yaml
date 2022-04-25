@@ -67,6 +67,7 @@ flutter:
     - icon.png
     - assets/quran.json
     - assets/chapters.json
+    - assets/tajwid.json
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

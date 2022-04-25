@@ -32,6 +32,7 @@ class _ReadPageS extends State<ReadPage> {
   bool aus = true;
   double size = 2;
   bool ar = false;
+  bool tajwid = false;
   List<String> dis = [];
   late Future<List<Chapter>> chap;
 
@@ -46,6 +47,7 @@ class _ReadPageS extends State<ReadPage> {
         aus = v.getBool("pos", defaultValue: true).getValue();
         size = v.getDouble("asize", defaultValue: 2).getValue();
         ar = v.getBool("ar", defaultValue: false).getValue();
+        tajwid = v.getBool("tajwid", defaultValue: false).getValue();
         dis = v.getStringList("disabledt", defaultValue: []).getValue();
       });
     });
@@ -154,8 +156,11 @@ class _ReadPageS extends State<ReadPage> {
                 return Container();
               }),
           FutureBuilder(
-            future:
-                DefaultAssetBundle.of(context).loadString("assets/quran.json"),
+            future: tajwid
+                ? DefaultAssetBundle.of(context)
+                    .loadString("assets/tajwid.json")
+                : DefaultAssetBundle.of(context)
+                    .loadString("assets/quran.json"),
             builder: (ctx, snapshot) {
               if (snapshot.hasData) {
                 WidgetsBinding.instance!.addPostFrameCallback((_) {
@@ -175,13 +180,44 @@ class _ReadPageS extends State<ReadPage> {
                     itemBuilder: (context, i) {
                       final p0 = s.elementAt(i);
                       final int key = int.parse(p0.id.split(":")[1]) - 1;
+
+                      int last = 0;
+                      List<InlineSpan> tj = [];
+                      if (tajwid) {
+                        final t = p0.text;
+
+                        RegExp(r'<tajweed class="?(.*?)"?>(.*?)<\/tajweed>')
+                            .allMatches(t)
+                            .forEach((element) {
+                          tj.add(
+                              TextSpan(text: t.substring(last, element.start)));
+                        
+                          Color? co;
+                          switch (element.group(1)) {
+                            case "ikhafa":
+                            co = Colors.green[600]!;
+                          }
+
+                          tj.add(TextSpan(text: element.group(2), style: arabic.copyWith(color: co)));
+
+                          last = element.end;
+                        });
+
+                        tj.add(TextSpan(text: t.substring(last)));
+                      }
+                      
                       return Column(children: [
                         Container(
                             padding: const EdgeInsets.all(8),
                             child: Column(children: [
                               ListTile(
                                   leading: Text((key + 1).toString()),
-                                  title: Text(
+                                  title: tajwid? Text.rich(
+                                      TextSpan(children: tj),
+                                      textScaleFactor: size,
+                                      style: arabic,
+                                      textDirection: TextDirection.rtl,
+                                      locale: const Locale('ar')) :Text(
                                       p0.text + " " + nu((key + 1).toString()),
                                       textScaleFactor: size,
                                       style: arabic,

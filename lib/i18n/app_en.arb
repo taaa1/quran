@@ -35,5 +35,6 @@
   },
   "footnoteErr": "Cannot load footnote. Make sure you are connected to the Internet.",
   "next": "Next",
-  "prev": "Previous"
+  "prev": "Previous",
+  "tajwid": "Tajwid"
 }

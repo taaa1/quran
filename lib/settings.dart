@@ -74,6 +74,12 @@ class SettingsPage extends State<Stg> {
                                 secondary: const Icon(Icons.dark_mode),
                                 value: d,
                                 onChanged: (s) => pref.setBool("dark", s))),
+                        PreferenceBuilder<bool>(preference: pref.getBool("tajwid", defaultValue: false), builder: (context, s) => SwitchListTile(
+                          value: s,
+                          onChanged: (b) => pref.setBool("tajwid", b),
+                          title: Text(AppLocalizations.of(context)!.tajwid),
+                          secondary: const Icon(Icons.format_color_text),
+                        )),
                         PreferenceBuilder<bool>(
                             preference: pref.getBool("ar", defaultValue: false),
                             builder: (context, d) => SwitchListTile(
