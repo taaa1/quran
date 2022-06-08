@@ -7,8 +7,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'd/chapters.dart';
 import 'read.dart';
 import 'arabic.dart';
-import 'info.dart';
 import 'settings.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key}) : super(key: key);
@@ -45,8 +45,12 @@ class _MyHomePageState extends State<MyHomePage> {
               tooltip: AppLocalizations.of(context)!.settings,
             ),
             IconButton(
-                onPressed: () => Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => const Info())),
+                onPressed: () => PackageInfo.fromPlatform().then((v) => showLicensePage(
+                    context: context,
+                    applicationName: "Qur'an",
+                    applicationVersion: v.version,
+                    applicationLegalese: AppLocalizations.of(context)!.about2
+                  )),
                 icon: const Icon(Icons.info_outline),
                 tooltip: AppLocalizations.of(context)!.about)
           ],

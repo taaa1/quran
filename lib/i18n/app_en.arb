@@ -9,7 +9,7 @@
   "installed": "Installed",
   "available": "Available",
   "footnote": "Footnote",
-  "about2": "Qur'an data & translations from Quran.com\n\nVersion {version}\n\nBuilt with Flutter",
+  "about2": "Qur'an data & translations from Quran.com",
   "@about2": {
     "type": "text",
     "placeholders": {
