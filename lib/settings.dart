@@ -100,6 +100,20 @@ class SettingsPage extends State<Stg> {
                                     SizeDialog(s: size)).then(
                                 (value) => pref.setDouble("asize", value!))),
                         ListTile(
+                          title: Text(AppLocalizations.of(context)!.quran_text),
+                          leading: const Icon(Icons.font_download),
+                          onTap: () => showDialog(
+                              context: context,
+                              builder: (ctx) => SimpleDialog(
+                                    title: Text(AppLocalizations.of(context)!
+                                        .quran_text),
+                                    children: [
+                                      option(AppLocalizations.of(context)!.uthmani, 0),
+                                      option(AppLocalizations.of(context)!.imlaei, 1)
+                                    ],
+                                  )),
+                        ),
+                        ListTile(
                           title: Text(AppLocalizations.of(context)!.language),
                           leading: const Icon(Icons.language),
                           onTap: () => showDialog(
@@ -136,6 +150,16 @@ class SettingsPage extends State<Stg> {
 
   void update(bool b, String c) {
     StreamingSharedPreferences.instance.then((v) => v.setBool(c, b));
+  }
+
+  SimpleDialogOption option(String text, int value) {
+    return SimpleDialogOption(
+        child: Text(text),
+        onPressed: () {
+          StreamingSharedPreferences.instance
+              .then((val) => val.setInt("text_t", value));
+          Navigator.pop(context);
+        });
   }
 }
 

@@ -35,5 +35,8 @@
   },
   "footnoteErr": "Tidak dapat memuat catatan kaki. Pastikan Anda terhubung ke Internet.",
   "next": "Selanjutnya",
-  "prev": "Sebelumnya"
+  "prev": "Sebelumnya",
+  "quran_text": "Teks Qur'an",
+  "uthmani": "Utsmani",
+  "imlaei": "Imlaei"
 }

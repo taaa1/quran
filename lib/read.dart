@@ -32,6 +32,7 @@ class _ReadPageS extends State<ReadPage> {
   bool aus = true;
   double size = 2;
   bool ar = false;
+  int textt = 0;
   List<String> dis = [];
   late Future<List<Chapter>> chap;
 
@@ -46,6 +47,7 @@ class _ReadPageS extends State<ReadPage> {
         aus = v.getBool("pos", defaultValue: true).getValue();
         size = v.getDouble("asize", defaultValue: 2).getValue();
         ar = v.getBool("ar", defaultValue: false).getValue();
+        textt = v.getInt("text_t", defaultValue: 0).getValue();
         dis = v.getStringList("disabledt", defaultValue: []).getValue();
       });
     });
@@ -155,7 +157,7 @@ class _ReadPageS extends State<ReadPage> {
               }),
           FutureBuilder(
             future:
-                DefaultAssetBundle.of(context).loadString("assets/quran.json"),
+                DefaultAssetBundle.of(context).loadString("assets/${["quran", "imlaei"][textt]}.json"),
             builder: (ctx, snapshot) {
               if (snapshot.hasData) {
                 WidgetsBinding.instance!.addPostFrameCallback((_) {
